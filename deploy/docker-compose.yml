@@ -1,0 +1,50 @@
+version: "2"
+services:
+  blackmamba:
+    build:
+      context: ../frontend
+      dockerfile: ./Dockerfile
+    image: ${REGISTRY_PREFIX}blackmamba:${TAG}
+    ports:
+      - "80:80"
+    volumes:
+      - /etc/localtime:/etc/localtime
+    links:
+      - crane
+    restart: always
+  crane_registry:
+    build:
+      context: ../doc/registry
+      dockerfile: ./Dockerfile
+    image: ${REGISTRY_PREFIX}registry:crane${TAG}
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - CRANE_IP
+    volumes:
+      - ./registry_storage:/storage
+    restart: always
+  crane:
+    build:
+      context: ../
+      dockerfile: ./deploy/Dockerfile
+    image: ${REGISTRY_PREFIX}crane:${TAG}
+    environment:
+      - CRANE_SWARM_MANAGER_IP
+    links:
+      - crane_registry
+      - crane_db  
+    ports:
+       - "5013:5013"
+    restart: always
+  crane_db:
+    build:
+      context: ./mysql
+      dockerfile: ./Dockerfile
+    image: ${REGISTRY_PREFIX}mysql:crane${TAG}
+    environment:
+      - MYSQL_ROOT_PASSWORD=111111
+    volumes:
+      - ./mysql_storage:/var/lib/mysql
+    restart: always

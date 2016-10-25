@@ -1,0 +1,94 @@
+<header layout="row" layout-align="end start" id="header-main">
+    <div flex="none">
+        <md-button id="node-add-node" class="md-button md-primary md-small md-raised" aria-label="添加主机" data-ng-click="nodeListCtrl.addWorkerNode($event)">
+            <i class="fa fa-plus" aria-hidden="true"></i> {/'Add Node' | translate/}
+        </md-button>
+    </div>
+</header>
+
+<md-table-container>
+    <table id="node-list" md-table>
+        <thead md-head>
+        <tr md-row>
+            <th md-column>ID</th>
+            <th md-column>{/'Hostname' | translate/}</th>
+            <th md-column>{/'Role' | translate/}</th>
+            <th md-column id="node-usability">{/'Availability' | translate/}</th>
+            <th md-column id="node-status">{/'Status' | translate/}</th>
+            <th md-column>{/'Labels' | translate/}</th>
+            <th md-column>{/'Created At' | translate/}</th>
+            <th md-column>{/'Operation' | translate/}</th>
+        </tr>
+        </thead>
+        <tbody md-body>
+        <tr md-row ng-repeat="node in nodeListCtrl.nodes">
+            <td md-cell>
+                <p ng-show="node.Status.State === 'down'">{/node.ID | limitTo: ID_LIMIT_LENGTH/}</p>
+                <a id="node-list-id-{/$index/}" data-ui-sref="node.detail({node_id: node.ID})" ng-hide="node.Status.State === 'down'">{/node.ID | limitTo: ID_LIMIT_LENGTH/}</a>
+                <md-tooltip md-direction="top">{/node.ID/}</md-tooltip>
+            </td>
+            <td md-cell>
+                <p ng-show="node.Status.State === 'down'">{/node.Description.Hostname/}</p>
+                <a id="node-list-name-{/$index/}" data-ui-sref="node.detail({node_id: node.ID})" ng-hide="node.Status.State === 'down'">{/node.Description.Hostname/}</a>
+            </td>
+            <td md-cell>{/NODE_ROLE[node.Spec.Role] | translate/} <i class="fa fa-anchor text-success" data-ng-if="node.ManagerStatus.Leader"></i></td>
+            <td md-cell>{/NODE_AVAILABILITY[node.Spec.Availability] | translate/}</td>
+            <td md-cell>{/NODE_STATE[node.Status.State] | translate/}</td>
+            <td md-cell>
+                <ul>
+                    <li ng-repeat="(key, value) in node.Spec.Labels">{/key/}:{/value/}</li>
+                </ul>
+            </td>
+            <td md-cell>{/node.CreatedAt | date: 'yyyy-MM-dd HH:mm:ss'/}</td>
+            <td md-cell>
+                <md-menu md-offset="0 -5">
+                    <md-button id="node-list-menu-{/$index/}" class="md-icon-button" aria-label="More" ng-click="$mdOpenMenu($event)">
+                        <i class="fa fa-ellipsis-h"></i>
+                    </md-button>
+                    <md-menu-content width="2">
+                        <md-menu-item>
+                            <md-button id="node-link-master-{/$index/}" aria-label="endpoint" data-ng-click="nodeListCtrl.updateEndpoint(node.ID, $event, node.Spec.Labels)">{/'Connect host' | translate/}
+                                <md-tooltip md-direction="left">{/'Docker Daemon Setup' | translate/}</md-tooltip>
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button id="node-edit-label-{/$index/}" aria-label="labels" data-ng-click="nodeListCtrl.updateLabels(node.ID, $event, node.Spec.Labels)">{/'Edit label' | translate/}
+                                <md-tooltip md-direction="left">{/'Edit label tooltip' | translate/}</md-tooltip>
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button id="node-stop-dispatch-{/$index/}" aria-label="drain"
+                                       data-ng-disabled="node.Spec.Availability !== 'active'"
+                                       data-ng-click="nodeListCtrl.drainNode(node.ID)">{/'Drain' | translate/}
+                                <md-tooltip md-direction="left">{/'Drain tooltip' | translate/}</md-tooltip>
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button id="node-recover-dispatch-{/$index/}" aria-label="active"
+                                       data-ng-disabled="node.Spec.Availability === 'active'"
+                                       data-ng-click="nodeListCtrl.activeNode(node.ID)">{/'Active' | translate/}
+                                <md-tooltip md-direction="left">{/'Active tooltip' | translate/}</md-tooltip>
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button id="node-pause-dispatch-{/$index/}" aria-label="pause"
+                                       data-ng-disabled="node.Spec.Availability !== 'active'"
+                                       data-ng-click="nodeListCtrl.pauseNode(node.ID)">{/'Pause' | translate/}
+                                <md-tooltip md-direction="left">{/'Pause tooltip' | translate/}</md-tooltip>
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button id="node-delete-master-{/$index/}" aria-label="delete"
+                                       data-ng-disabled="node.Status.State !== 'down'"
+                                       data-ng-click="nodeListCtrl.deleteNode(node.ID)">{/'Delete host' | translate/}
+                                <md-tooltip md-direction="left">{/'Delete host tooltip' | translate/}</md-tooltip>
+                            </md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</md-table-container>
+

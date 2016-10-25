@@ -1,0 +1,54 @@
+<header layout="row" layout-align="end start" id="header-main">
+    <div flex="none">
+        <md-button id="net-create-btn" class="md-button md-primary md-small md-raised" aria-label="创建虚拟网络" data-ui-sref="network.create">
+            <i class="fa fa-plus" aria-hidden="true"></i> {/'Create Network' | translate/}
+        </md-button>
+    </div>
+</header>
+<md-table-container>
+    <table id="net-list-table" md-table>
+        <thead md-head>
+        <tr md-row>
+            <th md-column>ID</th>
+            <th md-column>{/'Name' | translate/}</th>
+            <th md-column>{/'Type' | translate/}</th>
+            <th md-column>{/'Internal Network' | translate/}</th>
+            <th md-column>{/'Subnet Mask' | translate/}</th>
+            <th md-column>{/'Gateway' | translate/}</th>
+            <th md-column>{/'IP range' | translate/}</th>
+            <th md-column>{/'Operation' | translate/}</th>
+        </tr>
+        </thead>
+        <tbody md-body>
+        <tr md-row ng-repeat="network in networkListCtrl.networks">
+            <td md-cell>
+                <a id="net-network-id-{/$index/}" class="ellipsis" data-ui-sref="network.detail({network_id: network.Id})">{/network.Id | limitTo: ID_LIMIT_LENGTH/}
+                    <md-tooltip md-direction="top">{/network.Id/}</md-tooltip>
+                </a>
+            </td>
+            <td md-cell>
+                <a id="net-network-name-{/$index/}" class="ellipsis" data-ui-sref="network.detail({network_id: network.Id})">{/network.Name/}
+                    <md-tooltip md-direction="top">{/network.Name/}</md-tooltip>
+                </a>
+            </td>
+            <td md-cell>{/network.Driver/}</td>
+            <td md-cell>{/network.Internal ? 'YES':'NO' | translate/}</td>
+            <td md-cell><span ng-class="{'no-info': !network.IPAM.Config[0].Subnet}">{/network.IPAM.Config[0].Subnet || ('Not configured' | translate)/}</span>
+            </td>
+            <td md-cell><span ng-class="{'no-info': !network.IPAM.Config[0].Gateway}">{/network.IPAM.Config[0].Gateway || ('Not configured' | translate)/}</span>
+            </td>
+            <td md-cell><span ng-class="{'no-info': !network.IPAM.Config[0].IPRange}">{/network.IPAM.Config[0].IPRange || ('Not configured' | translate)/}</span>
+            </td>
+            <td md-cell>
+                <md-button id="net-remove-network-{/$index/}" class="md-icon-button" aria-label="delete" ng-hide="RESERVED_NETWORK_NAMES.indexOf(network.Name) !== -1"
+                           data-ng-click="networkListCtrl.deleteNetwork(network.Id)"><i class="fa fa-trash"></i>
+                    <md-tooltip md-direction="left">{/'Remove network' | translate/}</md-tooltip>
+                </md-button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="alert alert-warning text-center" data-ng-if="!networkListCtrl.networks.length">
+        {/'No query information to a network' | translate/}
+    </div>
+</md-table-container>

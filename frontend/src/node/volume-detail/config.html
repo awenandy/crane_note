@@ -1,0 +1,26 @@
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Basic Information' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <div flex="30"><h5>{/'Driver' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeVolumeConfigCtrl.volume.Driver/}</p></div>
+        <div flex="30"><h5>{/'Mount points' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeVolumeConfigCtrl.volume.Mountpoint/}</p></div>
+    </div>
+</section>
+
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Labels' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <table id="node-volume-config-table" cellpadding="0" cellspacing="0" dm-empty-display="nodeVolumeConfigCtrl.volume.Labels">
+            <tr>
+                <th>KEY</th>
+                <th>VALUE</th>
+            </tr>
+
+            <tr ng-repeat="(key, value)  in  nodeVolumeConfigCtrl.volume.Labels">
+                <td>{/key/}</td>
+                <td>{/value/}</td>
+            </tr>
+        </table>
+    </div>
+</section>

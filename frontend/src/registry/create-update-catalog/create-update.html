@@ -1,0 +1,76 @@
+<form name="staticForm" class="form-main">
+    <div class="form-group" layout="column">
+        <label>{/'Stack Template Name' | translate/}<span class="required">*</span>
+            <small></small>
+        </label>
+        <div class="form-control">
+            <input id="image-catalog-name" type="text" data-ng-model="createUpdateCatalog.form.Name" data-required="required" name="Name"
+                   data-ng-pattern="/^[A-Za-z0-9]+$/" focus-me>
+        </div>
+        <div ng-messages="staticForm.Name.$error" ng-if="staticForm.Name.$dirty" role="alert">
+            <p class="text-danger help-text" ng-message="required">{/'Name field is required' | translate/}</p>
+            <p class="text-danger help-text" ng-message="pattern">{/'Only number and letter permitted' | translate/}</p>
+        </div>
+    </div>
+
+    <div class="form-group" layout="column">
+        <label dm-doc-link='https://blog.docker.com/2016/06/docker-app-bundle/'>DAB<span
+                class="required">*</span></label>
+        <div id="image-catalog-json-div" class="form-control">
+            <textarea id="image-catalog-json" ui-ace="createUpdateCatalog.aceOption" data-ng-model="createUpdateCatalog.form.Bundle"
+                      data-required="required" name="Bundle"
+                      data-ng-change="createUpdateCatalog.stackChange()">
+            </textarea>
+        </div>
+
+        <div ng-messages="staticForm.Bundle.$error" ng-if="staticForm.Bundle.$dirty" role="alert">
+            <p class="text-danger help-text"
+               ng-message="required">
+                <small>{/'Volume Name is required' | translate/}</small>
+            </p>
+        </div>
+        <p class="text-danger help-text" data-ng-show="createUpdateCatalog.errorInfo.stack">
+            {/createUpdateCatalog.errorInfo.stack/}
+        </p>
+
+    </div>
+
+    <div class="form-group" layout="column">
+        <label>{/'Stack Template Description' | translate/}</label>
+        <div class="form-control">
+            <textarea id="create-catalog-description" data-ng-model="createUpdateCatalog.form.Description"
+                      name="Description">
+            </textarea>
+        </div>
+    </div>
+
+    <div class="form-group" layout="column">
+        <div class="form-control">
+            <label>{/'Upload Picture' | translate/}</label>
+            <div layout="row">
+                <img ng-src="{/createUpdateCatalog.imageUrl/}"
+                     style="max-width: 20%; max-height: 20%; min-height: 0; min-width: 0;"/>
+                <input type='file' class="ng-hide"
+                       onchange="angular.element(this).scope().createUpdateCatalog.imageUpload(this.files)"/>
+                <md-button id="image-upload" trigger-prev-click class="md-small md-success" flex="none"><i
+                        class="fa fa-upload"></i>
+                    {/'Read from a file' | translate/}
+                </md-button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="form-buttons">
+        <md-button id="image-catalog-create" class="md-raised md-primary" ng-if="createUpdateCatalog.target === 'create'"
+                   data-ng-disabled="staticForm.$invalid || createUpdateCatalog.errorInfo.stack || createUpdateCatalog.imageSize > IMAGE_MAX_SIZE"
+                   data-ng-click="createUpdateCatalog.deploy('create')">{/'Save' | translate/}
+        </md-button>
+
+        <md-button id="image-catalog-update" class="md-raised md-primary" ng-if="createUpdateCatalog.target === 'update'"
+                   data-ng-disabled="staticForm.$invalid || createUpdateCatalog.errorInfo.stack || createUpdateCatalog.imageSize > IMAGE_MAX_SIZE"
+                   data-ng-click="createUpdateCatalog.deploy('update')">{/'Update' | translate/}
+        </md-button>
+
+        <md-button id="image-catalog-cancel" data-ng-click="rootCtrl.goBack()">{/'Cancel' | translate/}</md-button>
+    </footer>
+</form>

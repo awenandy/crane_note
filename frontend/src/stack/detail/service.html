@@ -1,0 +1,47 @@
+<md-table-container>
+    <table id="stack-service-table" md-table>
+        <thead md-head>
+        <tr md-row>
+            <th md-column>{/'Service Name' | translate/}</th>
+            <th md-column>{/'Task Number' | translate/}
+                <small>{/'Running/Total' | translate/}</small>
+            </th>
+            <th md-column>{/'Created At' | translate/}</th>
+            <th md-column>{/'Updated At' | translate/}</th>
+            <th md-column>{/'Operation' | translate/}</th>
+        </tr>
+        </thead>
+        <tbody md-body>
+        <tr md-row ng-repeat="service in stackServiceCtrl.services">
+            <td md-cell>
+                <a data-ui-sref="stack.serviceDetail({stack_name: stackDetailCtrl.stack.Namespace, service_id: service.ID})">{/service.Name/}</a>
+            </td>
+            <td md-cell>{/service.NumTasksRunning/}/{/service.NumTasksTotal/}</td>
+            <td md-cell>{/service.UpdatedAt | date: 'yyyy-MM-dd HH:mm:ss'/}</td>
+            <td md-cell>{/service.CreatedAt | date: 'yyyy-MM-dd HH:mm:ss'/}</td>
+            <td md-cell>
+                <md-menu>
+                    <md-button id="service-menu-{/$index/}" class="md-icon-button" aria-label="More" ng-click="$mdOpenMenu($event)">
+                        <i class="fa fa-ellipsis-h"></i>
+                    </md-button>
+
+                    <md-menu-content width="2">
+                        <md-menu-item>
+                            <md-button id="service-scale-{/$index/}" aria-label="scale"
+                                       data-ng-click="stackServiceCtrl.upServiceScale($event, stackDetailCtrl.stack.Namespace, service.Name, service.NumTasksTotal)">
+                                <i class="fa fa-sort" aria-hidden="true"></i> {/'Service Scale' | translate/}
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button id="serrvice-update-{/$index/}" aria-label="update"
+                                       data-ng-click="stackServiceCtrl.updateService($stateParams.stack_name, service.ID)">
+                                <i class="fa fa-refresh" aria-hidden="true"></i> {/'Update' | translate/}
+                            </md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</md-table-container>

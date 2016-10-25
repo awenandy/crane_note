@@ -1,0 +1,3130 @@
+swagger: '2.0'
+info:
+  title: shurenyun API
+  description: "数人云 API 文档"
+  version: "1"
+host: 192.168.59.104
+schemes:
+  - https
+basePath: /
+produces:
+  - application/json
+  
+paths:
+  /api/v1/stacks:
+    post:
+      summary: 创建一个应用, 一个应用可包含多个服务
+      description: 创建应用的API, 成功返回 HTTPStatus 200, 失败返回相应的错误信息
+      tags:
+        - Stacks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: 创建应用所需的参数
+          required: true
+          schema:
+            $ref: '#/definitions/Bundle'
+      responses:
+        200:
+          description: 创建成功返回success
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        400:
+          description: 创建stack参数错误
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        503:
+          description: 创建stack失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    get:
+      summary: 查询所有应用列表, 以及每个应用包含服务的简单信息
+      description: 查询所有应用API, 返回所有应用, 以及应用包含服务的简单信息
+      tags:
+        - Stacks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+      responses:
+        200:
+          description: 所有应用列表
+          schema:
+            type: array
+            items:
+              type: object
+              required:
+                - Namespace
+                - ServiceCount
+                - Services
+              properties:
+                Namespace:
+                  type: string
+                  description: 应用名称
+                ServiceCount:
+                  type: integer
+                  format: int32
+                Services:
+                  type: array
+                  items:
+                    $ref: '#/definitions/ServiceStatus'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        503:
+          description: 查询所有应用失败, 具体错误可以查看错误码
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/stacks/{namespace}:
+    get:
+      summary: 查询指定应用以及应用包含所有服务的信息
+      description: 查询指定应用以及应用包含所有服的相关信息
+      tags:
+        - Stacks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: namespace
+          in: path
+          description: 应用名称
+          required: true
+          type: string
+      responses:
+        200:
+          description: 指定应用和所包含服务的信息
+          schema:
+            $ref: '#/definitions/Bundle'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        503:
+          description: 查询失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+            
+    delete:
+      summary: 删除指定应用
+      description: 删除指定应用,以及应用所包含的服务和网络
+      tags:
+        - Stacks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: namespace
+          in: path
+          description: 应用名称
+          required: true
+          type: string
+      responses:
+        200:
+          description: 指定应用和所包含服务的信息
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        503:
+          description: 查询失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /account/v1/login:
+    post:
+      summary: 通过用户邮箱和密码登陆系统, 登陆成功返回token
+      description: 向服务器验证用户邮箱和密码, 验证成功返回当前登录用户的token; 否则返回相应的错误信息
+      tags:
+        - Account
+      parameters:
+        - name: body
+          in: body
+          description: 登陆用户的邮箱和密码
+          required: true
+          schema:
+            type: object
+            properties:
+              Email:
+                type: string
+                description: 用户邮箱
+              Password:
+                type: string
+                description: 用户密码
+      responses:
+        200:
+          description: 登陆成功返回当前用户的token
+          schema:
+            type: object
+            required:
+              - code
+              - data
+            properties:
+              code:
+                type: integer
+                format: int32
+              data:
+                type: object
+                required:
+                  - token
+                properties:
+                  token:
+                    type: string
+                    description: 用户登陆凭证
+        401:
+          description: 登录失败, 返回相应的errorcode 和错误信息
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /account/v1/logout:
+    post:
+      summary: 登出用户
+      description: 删除服务器token, 验证成功返回200; 否则返回相应的错误信息
+      tags:
+        - Account
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+      responses:
+        200:
+          description: 登出成功
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        401:
+          description: 登出失败, 返回相应的errorcode 和错误信息
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /account/v1/aboutme:
+    get:
+      summary: 获取当前用户信息
+      description: 正确返回当前用户信息，失败则返回相应错误信息
+      tags:
+        - Account
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回当前用户信息
+          schema:
+            type: object
+            properties:
+              Email:
+                type: string
+                description: 邮箱
+              Id:
+                type: integer
+                description: id
+              LoginAt:
+                type: string
+                description: 登录时间
+              Phone:
+                type: string
+                description: 手机号
+              Title:
+                type: string
+                description: 代称
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/nodes/{node_id}/networks:
+    post:
+      summary: 在相应节点上创建集群网络
+      description: 创建成功返回200，创建失败返回相应错误信息
+      tags:
+        - Networks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: body
+          in: body
+          description:  创建网络相应详细信息
+          required: true
+          schema:
+            $ref: '#/definitions/CreateNetworkOptions'
+      responses:
+        200:
+          description: 创建成功返回信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/CreateNetworkOptions'
+        400:
+          description: 创建参数错误
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        503:
+          description: 创建失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    get:
+      summary: 获取指定节点上的network
+      description: 正确返回200，失败则返回相应错误信息
+      tags:
+        - Networks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回所有网络信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/CreateNetworkOptions'
+        400:
+          description: 过滤条件不合理
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        503:
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    
+  /api/v1/nodes/{node_id}/networks/{network_id}:
+    get:
+      summary: 获取网络详细信息
+      description: 获取成功返回200,错误返回相应信息
+      tags:
+        - Networks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: network_id
+          in: path
+          description: 网络 id
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回所有网络信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/CreateNetworkOptions'
+        503:
+          description: 获取网络信息失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    patch:
+      summary: 连接或断开网络 
+      description: 操作成功返回200，失败返回相应信息
+      tags:
+        - Networks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: network_id
+          in: path
+          description: 网络 id
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: body
+          in: body
+          description:  断开或连接网络详细参数
+          required: true
+          schema:
+            $ref: '#/definitions/NetworkConnOrDisconn'
+      responses:
+        200:
+          description: 操作成功
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        400:
+          description: 操作失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        500:
+          description: 操作失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    
+
+  /api/v1/networks:
+    post:
+      summary: 在manager节点上创建集群网络
+      description: 创建成功返回200，创建失败返回相应错误信息
+      tags:
+        - Networks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: body
+          in: body
+          description:  创建网络相应详细信息
+          required: true
+          schema:
+            $ref: '#/definitions/CreateNetworkOptions'
+      responses:
+        200:
+          description: 创建成功返回信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/CreateNetworkOptions'
+        400:
+          description: 创建参数错误
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        503:
+          description: 创建失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    get:
+      summary: 获取manager节点上所有的网络
+      description: 或许成功返回200，或许失败返回相应信息
+      tags:
+        - Networks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回所有网络信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/CreateNetworkOptions'
+        503:
+          description: 获取网络列表失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+            
+  /api/v1/networks/{network_id}:
+    delete:
+      summary: 删除manager节点集群网络
+      description: 删除成功返回200，失败返回相应错误信息
+      tags:
+        - Networks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: network_id
+          in: path
+          description: 网络 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        503:
+          description: 删除网络失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    get:
+      summary: 获取网络详细信息
+      description: 获取成功返回200,错误返回相应信息
+      tags:
+        - Networks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: network_id
+          in: path
+          description: 网络 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回所有网络信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/CreateNetworkOptions'
+        503:
+          description: 获取网络信息失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    patch:
+      summary: 连接或断开网络 
+      description: 操作成功返回200，失败返回相应信息
+      tags:
+        - Networks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: network_id
+          in: path
+          description: 网络 id
+          required: true
+          type: integer
+          format: int64
+        - name: body
+          in: body
+          description:  断开或连接网络详细参数
+          required: true
+          schema:
+            $ref: '#/definitions/NetworkConnOrDisconn'
+      responses:
+        200:
+          description: 操作成功
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        400:
+          description: 操作失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        500:
+          description: 操作失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+            
+  /api/v1/nodes/{node_id}/images:
+    get:
+      summary: 获取节点上所有的镜像
+      description: 争取返回200，错误返回相应错误码
+      tags:
+        - Images
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: filter
+          in: query
+          description: 过滤条件,默认{},json格式
+          required: false
+          type: string
+      responses:
+        200:
+          description: 返回所有镜像信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/APIImages'
+        500:
+          description: 获取镜像失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        400:
+          description: 过滤参数错误
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+  
+  /api/v1/nodes/{node_id}/images/{image_id}:
+    get:
+      summary: 获取节点上所有的镜像
+      description: 争取返回200，错误返回相应错误码
+      tags:
+        - Images
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: image_id
+          in: path
+          description: 镜像 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回镜像信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/Image'
+        500:
+          description: 获取镜像详细信息失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    delete:
+      summary: 删除镜像
+      description: 删除成功返回200，错误返回相应错误码
+      tags:
+        - Images
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: image_id
+          in: path
+          description: 镜像 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        500:
+          description: 删除镜像失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+            
+  /api/v1/nodes/{node_id}/images/{image_id}/history:
+    get:
+      summary: 获取镜像历史记录 
+      description: 正确返回200，错误返回相应错误码
+      tags:
+        - Images
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: image_id
+          in: path
+          description: 镜像 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回镜像历史
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/ImageHistory'
+        500:
+          description: 获取镜像历史失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/nodes:
+    get:
+      summary: 获取主机列表
+      description: 正确返回200，错误返回相应错误码
+      tags:
+        - Nodes
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回主机列表
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Node'
+        500:
+          description: 获取主机列表失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/nodes/{node_id}/info:
+    get:
+      summary: 获取主机信息
+      description: 正确返回200，错误返回相应错误码
+      tags:
+        - Nodes
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回主机信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/NodeInfo'
+        503:
+          description: 获取主机信息失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        500:
+          description: 获取主机信息失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/node/{node_id}:
+    patch:
+      summary: 更改主机可用状态/修改主机标签/删除主机标签/更新主机地址
+      description: 操作成功返回200，失败返回相应信息
+      tags:
+        - Nodes
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: 更改主机详细参数
+          required: true
+          schema:
+            type: object
+            properties:
+              Method:
+                type: string
+                enum:
+                - availability
+                - label-update
+                - label-rm
+                - endpoint-update
+              Options:
+                description: "Method是availability时, 值为drain/active/pause; Method是label-update时, 值的格式为{label_key: label_value}; Method是label-rm时, 值的格式为[label_id]; Method是endpoint-update时, 值为\"[ip]:[port]\""
+      responses:
+        200:
+          description: 操作成功
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        400:
+          description: 操作失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        500:
+          description: 操作失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+    delete:
+      summary: 删除主机
+      description: 操作成功返回200，失败返回相应信息
+      tags:
+        - Nodes
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 操作成功
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        400:
+          description: 操作失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        500:
+          description: 操作失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/nodes/{node_id}/containers/{container_id}/terminal:
+    get:
+      summary: 容器终端websocket连接
+      description: 操作成功返回101，失败返回相应信息
+      tags:
+        - Containers
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: container_id
+          in: path
+          description: 容器 id
+          required: true
+          type: string
+      responses:
+        101:
+          description: 成功连接
+        400:
+          description: 操作失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        500:
+          description: 操作失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/nodes/{node_id}/containers:
+    get:
+      summary: 获取主机的容器列表
+      description: 正确返回200，错误返回相应错误码
+      tags:
+        - Nodes
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回主机的容器列表
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Container'
+        500:
+          description: 获取主机的容器列表失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/nodes/{node_id}/containers/{container_id}:
+    get:
+      summary: 获取容器信息
+      description: 获取成功返回200，失败返回相应信息
+      tags:
+        - Containers
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: container_id
+          in: path
+          description: 容器 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回容器信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/ContainerInfo'
+        400:
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        500:
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    delete:
+      summary: 删除指定容器
+      description: 删除成功返回200，失败返回相应信息
+      tags:
+        - Containers
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: container_id
+          in: path
+          description: 容器 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        400:
+          description: 删除失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        500:
+          description: 删除失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/nodes/{node_id}/containers/{container_id}/diff:
+    get:
+      summary: 获取容器变更信息
+      description: 获取成功返回200，失败返回相应信息
+      tags:
+        - Containers
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: container_id
+          in: path
+          description: 容器 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回容器变更信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Kind:
+                      description: "类型,0为修改,1为添加"
+                      type: integer
+                    Path:
+                      description: 路径
+                      type: string
+        400:
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        500:
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/nodes/{node_id}/volumes:
+    post:
+      summary: 创建存储卷
+      description: 创建存储卷, 成功返回 HTTPStatus 200, 失败返回相应的错误信息
+      tags:
+        - Volumes
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: 创建存储卷所需的参数
+          required: true
+          schema:
+            type: object
+            properties:
+              Driver:
+                type: string
+                description: 驱动
+              Labels:
+                type: object
+                description: 标签, key-value格式
+              Name:
+                type: string
+                description: 名称
+      responses:
+        200:
+          description: 返回储存卷信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/Volume'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        400:
+          description: 创建存储卷参数错误
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        503:
+          description: 创建存储卷失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    get:
+      summary: 获取节点上所有的存储卷
+      description: 获取成功返回200，错误返回相应错误码
+      tags:
+        - Volumes
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回所有存储卷信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Volume'
+        500:
+          description: 获取存储卷失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/nodes/{node_id}/volumes/{volume_id}:
+    get:
+      summary: 获取节点上的指定储存卷
+      description: 成功返回200，错误返回相应错误码
+      tags:
+        - Volumes
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: volume_id
+          in: path
+          description: 储存卷 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回储存卷信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/Volume'
+        500:
+          description: 获取储存卷详细信息失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    delete:
+      summary: 删除储存卷
+      description: 删除成功返回200，错误返回相应错误码
+      tags:
+        - Volumes
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: node_id
+          in: path
+          description: 节点 id
+          required: true
+          type: string
+        - name: volume_id
+          in: path
+          description: 储存卷 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        500:
+          description: 删除储存卷失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/stacks/{namespace}/services:
+    get:
+      summary: 获取应用上所有的服务
+      description: 成功返回200，错误返回相应错误码
+      tags:
+        - Stacks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: namespace
+          in: path
+          description: 应用名称
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回应用上所有的服务信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/ServiceStatus'
+        500:
+          description: 获取服务失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/stacks/{namespace}/services/{service_id}:
+    get:
+      summary: 获取应用上指定的服务
+      description: 成功返回200，错误返回相应错误码
+      tags:
+        - Stacks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: namespace
+          in: path
+          description: 应用名称
+          required: true
+          type: string
+        - name: service_id
+          in: path
+          description: 服务 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回服务详细信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                $ref: '#/definitions/Service'
+        500:
+          description: 获取服务详细信息失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    put:
+      summary: 更新应用上指定的服务
+      description: 成功返回200，错误返回相应错误码
+      tags:
+        - Stacks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: namespace
+          in: path
+          description: 应用名称
+          required: true
+          type: string
+        - name: service_id
+          in: path
+          description: 服务 id
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: 更新服务需要的参数
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceSpec'
+      responses:
+        200:
+          description: 更新服务成功
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        500:
+          description: 更新服务失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+    patch:
+      summary: 修改任务数
+      description: 成功返回200，错误返回相应错误码
+      tags:
+        - Stacks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: namespace
+          in: path
+          description: 应用名称
+          required: true
+          type: string
+        - name: service_id
+          in: path
+          description: 服务 id
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: 修改任务数需要的参数
+          required: true
+          schema:
+            type: object
+            properties:
+              NumTasks:
+                description: 修改成的任务数
+                type: integer
+                format: int32
+      responses:
+        200:
+          description: 更新服务成功
+          schema:
+            $ref: '#/definitions/GeneralOkResponse'
+        500:
+          description: 更新服务失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/stacks/{namespace}/services/{service_id}/tasks:
+    get:
+      summary: 获取应用上的服务的任务列表
+      description: 成功返回200，错误返回相应错误码
+      tags:
+        - Stacks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: namespace
+          in: path
+          description: 应用名称
+          required: true
+          type: string
+        - name: service_id
+          in: path
+          description: 服务 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回应用上的服务的任务列表
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/ServiceTask'
+        500:
+          description: 获取任务列表失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /api/v1/stacks/{namespace}/services/{service_id}/cd_url:
+    get:
+      summary: 获取应用上的服务的持续集成链接
+      description: 成功返回200，错误返回相应错误码
+      tags:
+        - Stacks
+      parameters:
+        - name: Authorization
+          in: header
+          description: 用户token
+          required: true
+          type: string
+        - name: namespace
+          in: path
+          description: 应用名称
+          required: true
+          type: string
+        - name: service_id
+          in: path
+          description: 服务 id
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回应用上的服务的持续集成链接
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: string
+                description: 持续集成的url中的key
+        500:
+          description: 获取持续集成链接失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+        401:
+          description: token 验证失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /misc/v1/config:
+    get:
+      summary: 获取平台信息
+      description: 成功返回信息，错误返回相应错误码
+      tags:
+        - Misc
+      responses:
+        200:
+          description: 返回平台信息
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: object
+                properties:
+                  Build:
+                    type: string
+                    description: 平台程序build时间
+                  FeatureFlags:
+                    type: array
+                    description: 使用插件列表
+                    items:
+                      type: string
+                  NumGoroutine:
+                    type: integer
+                    format: int32
+                    description: 协程总数
+                  SwarmInfo:
+                    type: object
+                    description: swarm信息
+                    properties:
+                      CreatedAt:
+                        type: string
+                        description: swarm创建时间
+                      ID:
+                        type: string
+                        description: swarm id
+                      JoinTokens:
+                        type: object
+                        properties:
+                          Manager:
+                            type: string
+                            description: manager token
+                          Worker:
+                            type: string
+                            description: worker token
+                      Spec:
+                        $ref: '#/definitions/SwarmSpec'
+                      UpdatedAt:
+                        type: string
+                        description: swarm更新时间
+                      Version:
+                        type: object
+                        description: swarm版本信息
+                        properties:
+                          Index:
+                            type: integer
+                            format: int64
+                  Version:
+                    type: string
+                    description: 平台版本号
+
+        500:
+          description: 获取持续集成链接失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+  /search/v1/luckysearch:
+    get:
+      summary: 搜索
+      description: 成功返回搜索结果，错误返回相应错误码
+      tags:
+        - Search
+      parameters:
+        - name: keyword
+          in: query
+          description: 搜索关键词
+          required: true
+          type: string
+      responses:
+        200:
+          description: 返回搜索结果
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int8
+                default: 0
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ID:
+                      type: string
+                      description: id
+                    Name:
+                      type: string
+                      description: 名称
+                    Param:
+                      type: object
+                      description: 参数
+                    Type:
+                      type: string
+        500:
+          description: 搜索失败
+          schema:
+            $ref: '#/definitions/GeneralErrorResponse'
+
+
+definitions:
+  GeneralOkResponse:
+    type: object
+    required:
+      - code
+      - data
+    properties:
+      code:
+        type: integer
+        format: int32
+      data:
+        type: string
+
+  GeneralErrorResponse:
+    type: object
+    required:
+      - code
+      - data
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+        description: 错误码，错误码对应详情可以查看(https://github.com/Dataman-Cloud/blackmamba/blob/master/src/constants.js)
+      data:
+        type: object
+        description: 有关错误的详细信息, 如果没有返回{}
+      message:
+        type: string
+        description: 错误的简单描述
+
+  Bundle:
+    type: object
+    required:
+      - Namespace
+      - Stack
+    properties:
+      Namespace:
+        type: string
+        description: 应用的名称(应用所包含所有服务的前缀)
+      Stack:
+        $ref: '#/definitions/Stack'
+
+  Stack:
+    type: object
+    required:
+      - Version
+      - Services
+    properties:
+      Version:
+        type: string
+        description: 应用版本
+      Services:
+        type: object
+        description: 应用所包含的服务, 是一个key为服务名称value为服务参数的map
+        additionalProperties:
+          $ref: '#/definitions/ServiceSpec'
+
+  ServiceSpec:
+    type: object
+    description: 下发服务所需的静态参数
+    required:
+      - Name
+      - Labels
+      - TaskTemplate
+      - Mode
+      - UpdateConfig
+      - Networks
+      - EndpointSpec
+      - RegistryAuth
+    properties:
+      Name:
+        type: string
+        description: 服务名称, 服务创建时会在服务名称前加上应用名称
+      Labels:
+        type: object
+        description: 服务标签 类型 map[string]string
+        additionalProperties:
+          type: string
+      TaskTemplate:
+        $ref: '#/definitions/TaskSpec'
+      Mode:
+        $ref: '#/definitions/ServiceMode'
+      UpdateConfig:
+        $ref: '#/definitions/UpdateConfig'
+      Networks:
+        description: 服务需要加入的网络名称列表
+        type: array
+        items:
+          description: 网络名称
+          type: string
+      EndpointSpec:
+        $ref: '#/definitions/EndpointSpec'
+      RegistryAuth:
+        description: 指定镜像仓库配置名称
+        type: string
+
+  TaskSpec:
+    description: 创建任务需要的静态参数
+    type: object
+    required:
+      - ContainerSpec
+      - Resources
+      - RestartPolicy
+      - Placement
+      - LogDriver
+    properties:
+      ContainerSpec:
+        $ref: '#/definitions/ContainerSpec'
+      Resources:
+        $ref: '#/definitions/ResourceRequirements'
+      RestartPolicy:
+        $ref: '#/definitions/RestartPolicy'
+      Placement:
+        $ref: '#/definitions/Placement'
+      LogDriver:
+        $ref: '#/definitions/Driver'
+
+  ContainerSpec:
+    description: 创建服务容器相关静态参数
+    type: object
+    required:
+      - Image
+      - Labels
+      - Command
+      - Args
+      - Env
+      - Dir
+      - User
+      - Groups
+      - TTY
+      - Mounts
+      - StopGracePeriod
+    properties:
+      Image:
+        description: 镜像名称
+        type: string
+      Labels:
+        description: 容器标签
+        type: object
+        additionalProperties:
+          type: string
+      Command:
+        description: 容器启动命令
+        type: array
+        items:
+          type: string
+      Args:
+        description: 容器启动命令的参数
+        type: array
+        items:
+          type: string
+      Env:
+        description: 容器启动时需要的环境变量
+        type: array
+        items:
+          type: string
+      Dir:
+        description: 容器的工作目录
+        type: string
+      User:
+        description: 容器所属用户
+        type: string
+      Groups:
+        description: 容器所属用户组
+        type: array
+        items:
+          type: string
+      TTY:
+        description: 是否分配虚拟终端
+        type: boolean
+      Mounts:
+        description: 容器挂载目录
+        type: array
+        items:
+          $ref: '#/definitions/Mount'
+      StopGracePeriod:
+        description: 杀死容器前的等待时间
+        type: integer
+        format: int32
+
+  Mount:
+    description: 挂载目录参数
+    type: object
+    required:
+      - Type
+      - Source
+      - Target
+      - ReadOnly
+      - BindOptions
+      - VolumeOptions
+    properties:
+      Type:
+        description: 挂载类型 (bind/volume)
+        type: string
+      Source:
+        description: 主机文件路径
+        type: string
+      Target:
+        description: 容器文件路径
+        type: string
+      ReadOnly:
+        description: 挂载到容器内部的文件是否只读
+        type: boolean
+      BindOptions:
+        description: 挂载方式为bind时的参数
+        type: object
+        required:
+          - Propagation
+        properties:
+          Propagation:
+            description: 文件权限
+            type: string
+            enum:
+              - rprivate
+              - private
+              - rshared
+              - shared
+              - rslave
+              - slave
+      VolumeOptions:
+        description: 挂载方式为volume时的挂载参数
+        type: object
+        required:
+          - NoCopy
+          - Labels
+          - DriverConfig
+        properties:
+          NoCopy:
+            description: 是否禁止复制
+            type: boolean
+          Labels:
+            description: 挂载的标签
+            type: object
+            additionalProperties:
+              type: string
+          DriverConfig:
+            description: 挂载驱动
+            type: object
+            required:
+              - Name
+              - Options
+            properties:
+              Name:
+                description: 驱动名称
+                type: string
+              Options:
+                description: 驱动参数
+                type: object
+                additionalProperties:
+                  type: string
+
+  ResourceRequirements:
+    description: 服务资源使用参数
+    type: object
+    required:
+      - Limits
+      - Reservations
+    properties:
+      Limits:
+        $ref: '#/definitions/Resources'
+      Reservations:
+        $ref: '#/definitions/Resources'
+
+  Resources:
+    type: object
+    required:
+      - NanoCPUs
+      - MemoryBytes
+    properties:
+      NanoCPUs:
+        description: 允许CPU占用的资源(CPU核数*10^9)
+        type: integer
+        format: int32
+      MemoryBytes:
+        description: 允许内存占用的资源()
+        type: integer
+        format: int32
+
+  RestartPolicy:
+    description: 容器退出后重启策略
+    type: object
+    required:
+      - Condition
+      - Delay
+      - MaxAttempts
+      - Window
+    properties:
+      Condition:
+        description: 重启策略
+        type: string
+        enum:
+          - none
+          - on-failure
+          - any
+      Delay:
+        description: 重启间隔
+        type: integer
+        format: int32
+      MaxAttempts:
+        description: 重启最多尝试次数
+        type: integer
+        format: int32
+      Window:
+        description: 重启窗口(策略在一个窗口期结束后重新开始新的窗口)
+        type: integer
+        format: int32
+
+  Placement:
+    description: 分发策略(限制服务发布到特定主机)
+    type: array
+    items:
+      type: string
+
+  Driver:
+    description: 驱动参数
+    type: object
+    required:
+      - Name
+      - Options
+    properties:
+      Name:
+        description: 驱动名称
+        type: string
+      Options:
+        description: 驱动标签
+        type: object
+        additionalProperties:
+          type: string
+
+  ServiceMode:
+    description: 发布服务模式
+    type: object
+    required:
+      - Replicated
+      - Global
+    properties:
+      Replicated:
+        description: 服务发布选择复制模式需要的参数和Global 参数互斥
+        type: object
+        required:
+          - Replicas
+        properties:
+          Replicas:
+            description: 目标容器总数
+            type: integer
+            format: int32
+      Global:
+        description: 一主机一容器模式(和Replicated参数2选1)
+        type: object
+
+  UpdateConfig:
+    description: 服务更细策略
+    type: object
+    required:
+      - Parallelism
+      - Delay
+      - FailureAction
+    properties:
+      Parallelism:
+        description: 并行更新任务数
+        type: integer
+        format: int32
+      Delay:
+        description: 任务的更新间隔
+        type: integer
+        format: int32
+      FailureAction:
+        description: 任务更新失败后时候继续
+        type: string
+        enum:
+          - pause
+          - continue
+
+  EndpointSpec:
+    description: 服务访问策略
+    type: object
+    required:
+      - Mode
+      - Ports
+    properties:
+      Mode:
+        description: 服务访问地址解析模式
+        type: string
+        enum:
+          - vip
+          - dnsrr
+      Ports:
+        description: 端口映射列表
+        type: array
+        items:
+          $ref: '#/definitions/PortConfig'
+
+  PortConfig:
+    description: 端口映射配置参数
+    type: object
+    required:
+      - Name
+      - Protocol
+      - TargetPort
+      - PublishedPort
+    properties:
+      Name:
+        description: 端口映射名称
+        type: string
+      Protocol:
+        description: 端口映射协议
+        type: string
+        enum:
+          - tcp
+          - udp
+      TargetPort:
+        description: 容器内部需要转发的端口
+        type: integer
+        format: int32
+      PublishedPort:
+        description: 主机对外暴露端口
+        type: integer
+        format: int32
+
+  ServiceStatus:
+    description: 服务运行状态和简要服务参数
+    type: object
+    required:
+      - ID
+      - Name
+      - NumTasksRunning
+      - NumTasksTotal
+      - Image
+      - Command
+      - CreatedAt
+      - UpdatedAt
+      - LimitCpus
+      - LimitMems
+      - ReserveCpus
+      - ReserveMems
+    properties:
+      ID:
+        description: 服务ID
+        type: string
+      Name:
+        description: 服务名称
+        type: string
+      NumTasksRunning:
+        description: 正在运行的任务数
+        type: integer
+        format: int32
+      NumTasksTotal:
+        description: 计划运行的任务数
+        type: integer
+        format: int32
+      Image:
+        description: 镜像名称
+        type: string
+      Command:
+        description: 容器启动命令
+        type: string
+      CreatedAt:
+        description: 服务创建时间
+        type: string
+      UpdatedAt:
+        description: 服务最后更新时间
+        type: string
+      LimitCpus:
+        description: 服务限制使用的CPU资源(正在运行的任务数量*单个任务CPU限制)
+        type: integer
+        format: int32
+      LimitMems:
+        description: 服务限制使用的内存资源(正在运行的任务数量*单个任务C内存限制)
+        type: integer
+        format: int32
+      ReserveCpus:
+        description: 服务预留CPU资源(计划任务数*单个任务CPU预留)
+        type: integer
+        format: int32
+      ReserveMems:
+        description: 服务预留内存资源(计划任务数*单个任务内存预留)
+        type: integer
+        format: int32
+
+  CreateNetworkOptions:
+    description: 创建网络详细配置
+    type: object
+    required:
+      - Name
+    properties:
+      Name:
+        type: string
+        description: 网络名称
+      CheckDuplicate:
+        type: boolean
+        description: 检查是否有相同名字的network
+      Driver:
+        type: string
+        description: 网络驱动
+      IPAM:
+        type: object
+        properties:
+          Driver:
+            type: string
+            description: 驱动
+          Config:
+            type: array
+            description: 配置
+            items:
+              type: object
+              description: ipam配置
+              properties:
+                Subnet:
+                  type: string
+                  description: 分支网络格式段
+                IPRange:
+                  type: string
+                  description: 从sub-range分配给容器的ip
+                Gateway:
+                  type: string
+                  description: 网关
+                AuxAddress:
+                  type: object
+                  description: 网络驱动辅助地址
+          Options:
+            type: object
+            description: 网络驱动特定配置
+          Labels:
+            type: object
+            description: 网络标签
+          Internal:
+            type: boolean
+            description: 内部网络
+          EnableIPv6:
+            type: boolean
+            description: 开启ipv6
+
+  NetworkConnOrDisconn:
+    type: object
+    properties:
+      Method:
+        type: string
+        description: connect/disconnect
+      NetworkOptions:
+        $ref: '#/definitions/NetworkConnectionOptions'
+
+  NetworkConnectionOptions:
+    description: 连接网络配置
+    type: object
+    required:
+      - Container
+    properties:
+      Container:
+        type: string
+        description: 容器id
+      EndpointConfig:
+        type: object
+        description: 配置
+        properties:
+          IPAMConfig:
+            type: object
+            description: ipam配置
+            properties:
+              IPv4Address:
+                type: string
+                description: ipv4地址
+              IPv6Address:
+                type: string
+                description: ipv6配置
+          Links:
+            type: array
+            items:
+              type: string
+          Aliases:
+            type: array
+            items:
+              type: string
+          NetworkID:
+            type: string
+            description: 网络id
+          EndpointID:
+            type: string
+          Gateway:
+            type: string
+          IPAddress:
+            type: string
+          IPPrefixLen:
+            type: integer
+            format: int64
+          IPv6Gateway:
+            type: string
+          GlobalIPv6Address:
+            type: string
+          GlobalIPv6PrefixLen:
+            type: integer
+            format: int64
+          MacAddress:
+            type: string
+      Force:
+        type: boolean
+
+  APIImages:
+    description: image详细信息
+    type: object
+    properties:
+      ID:
+        type: string
+        description: 镜像id
+      RepoTages:
+        type: array
+        items:
+          type: string
+          description: 标签
+      Created:
+        type: integer
+        format: int64
+      Size:
+        type: integer
+        format: int64
+      VirtualSize:
+        type: integer
+        format: int64
+      ParentID:
+        type: string
+      RepoDigests:
+        type: array
+        items:
+          type: string
+      Labels:
+        type: object
+
+  Image:
+    description: 镜像详细信息
+    type: object
+    properties:
+      ID:
+        type: string
+      RepoTags:
+        type: string
+      Parent:
+        type: string
+      Comment:
+        type: string
+      Created:
+        type: string
+      Container:
+        type: string
+      ContainerConfig:
+        $ref: '#/definitions/ImageConfig'
+      DockerVersion:
+        type: string
+      Author:
+        type: string
+      Config:
+        $ref: '#/definitions/ImageConfig'
+      Architecture:
+        type: string
+      Size:
+        type: integer
+        format: int64
+      VirtualSize:
+        type: integer
+        format: int64
+      RepoDigests:
+        type: array
+        items:
+          type: string
+      RootFS:
+        $ref: '#/definitions/RootFS'
+
+  RootFS:
+    properties:
+      Type:
+        type: string
+      Layers:
+        type: array
+        items:
+          type: string
+
+  ImageConfig:
+    type: object
+    properties:
+      Hostname:
+        type: string
+      Domainname:
+        type: string
+      User:
+        type: string
+      Memory:
+        type: integer
+        format: int64
+      MemorySwap:
+        type: integer
+        format: int64
+      MemoryReservation:
+        type: integer
+        format: int64
+      KernelMemory:
+        type: integer
+        format: int64
+      CPUShares:
+        type: integer
+        format: int64
+      CPUSet:
+        type: string
+      AttachStdin:
+        type: boolean
+      AttachStdout:
+        type: boolean
+      AttachStderr:
+        type: boolean
+      PortSpecs:
+        type: array
+        items:
+          type: string
+      ExposedPorts:
+        type: object
+      ArgsEscaped:
+        type: boolean
+      StopSignal:
+        type: string
+      Tty:
+        type: boolean
+      OpenStdin:
+        type: boolean
+      StdinOnce:
+        type: boolean
+      Env:
+        type: array
+        items:
+          type: string
+      Cmd:
+        type: array
+        items:
+          type: string
+      Healthcheck:
+        $ref: '#/definitions/HealthConfig'
+      DNS:
+        type: array
+        items:
+          type: string
+      Image:
+        type: string
+      Volumes:
+        type: string
+      VolumeDriver:
+        type: string
+      VolumesFrom:
+        type: string
+      WorkingDir:
+        type: string
+      MacAddress:
+        type: string
+      Entrypoint:
+        type: array
+        items:
+          type: string
+      NetworkDisabled:
+        type: boolean
+      SecurityOpts:
+        type: array
+        items:
+          type: string
+      OnBuild:
+        type: array
+        items:
+          type: string
+      Mounts:
+        type: array
+        items:
+          $ref: '#/definitions/Mount'
+      Labels:
+        type: object
+        additionalProperties:
+          type: string
+
+  HealthConfig:
+    properties:
+      Test:
+        type: array
+        items:
+          type: string
+      Interval:
+        type: string
+      Timeout:
+        type: string
+      Retries:
+        type: integer
+        format: int64
+
+  ImageHistory:
+    properties:
+      ID:
+        type: string
+      Tags:
+        type: array
+        items:
+          type: string
+      Created:
+        type: integer
+        format: int64
+      CreatedBy:
+        type: string
+      Size:
+        type: integer
+        format: int64
+
+  Node:
+    type: object
+    properties:
+      ID:
+        description: 主机ID
+        type: string
+      CreatedAt:
+        description: 创建时间
+        type: string
+      Description:
+        type: object
+        properties:
+          Engine:
+            description: docker信息
+            type: object
+            properties:
+              EngineVersion:
+                type: string
+              Plugins:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: string
+                    Type:
+                      type: string
+          Hostname:
+            description: 主机名
+            type: string
+          Platform:
+            description: 操作系统信息
+            type: object
+            properties:
+              Architectrue:
+                type: string
+              OS:
+                type: string
+          Resouces:
+            description: 硬件信息
+            type: object
+            properties:
+              MemoryBytes:
+                type: integer
+                format: int64
+              NanoCPUs:
+                type: integer
+                format: int64
+      ManagerStatus:
+        type: object
+        properties:
+          Addr:
+            description: manager的ip和port
+            type: string
+          Leader:
+            description: 是否为leader
+            type: boolean
+          Reachability:
+            description: 是否可达
+            type: string
+      Spec:
+        type: object
+        properties:
+          Availability:
+            description: 是否可用
+            type: string
+          Labels:
+            description: 标签
+            type: object
+          Role:
+            description: 角色
+            type: string
+      Status:
+        description: 状态
+        type: object
+        properties:
+          State:
+            type: string
+      UpdatedAt:
+        description: 更新时间
+        type: string
+      Version:
+        description: 版本
+        type: object
+        properties:
+          Index:
+            type: integer
+            format: int64
+
+  SwarmSpec:
+    type: object
+    properties:
+      CAConfig:
+        type: object
+        properties:
+          NodeCertExpiry:
+            type: integer
+            format: int64
+      Dispatcher:
+        type: object
+        properties:
+          HeartbeatPeriod:
+            type: integer
+            format: int64
+      Name:
+        type: string
+      Orchestration:
+        type: object
+        properties:
+          TaskHistoryRetentionLimit:
+            type: integer
+            format: int64
+      Raft:
+        type: object
+        properties:
+          ElectionTick:
+            type: integer
+            format: int64
+          HeartbeatTick:
+            type: integer
+            format: int64
+          LogEntriesForSlowFollowers:
+            type: integer
+            format: int64
+          SnapshotInterval:
+            type: integer
+            format: int64
+      TaskDefaults:
+        type: object
+
+  NodeInfo:
+    type: object
+    properties:
+      Architecture:
+        description: 系统架构
+        type: string
+      BridgeNfIp6tables:
+        type: boolean
+      BridgeNfIptables:
+        type: boolean
+      CPUSet:
+        type: boolean
+      CPUShares:
+        type: boolean
+      CgroupDriver:
+        type: string
+      ClusterAdvertise:
+        type: string
+      ClusterStore:
+        type: string
+      Containers:
+        description: 主机上的container总数
+        type: integer
+        format: int64
+      ContainersPaused:
+        description: 主机上暂停的container数量
+        type: integer
+        format: int64
+      ContainersRunning:
+        description: 主机上运行的container数量
+        type: integer
+        format: int64
+      ContainersStopped:
+        description: 主机上停止的container数量
+        type: integer
+        format: int64
+      CpuCfsPeriod:
+        type: boolean
+      CpuCfsQuota:
+        type: boolean
+      Debug:
+        type: boolean
+      DockerRootDir:
+        description: docker的根目录
+        type: string
+      Driver:
+        type: string
+      DriverStatus:
+        type: array
+        items:
+          type: string
+      ExecutionDriver:
+        type: string
+      ExperimentalBuild:
+        type: boolean
+      HttpProxy:
+        type: string
+      HttpsProxy:
+        type: string
+      ID:
+        description: id
+        type: string
+      IPv4Forwarding:
+        type: boolean
+      Images:
+        description: 主机上的image总数
+        type: integer
+        format: int64
+      IndexServerAddress:
+        type: string
+      KernelMemory:
+        type: boolean
+      KernelVersion:
+        description: 内核版本
+        type: string
+      Labels:
+        type: object
+      LoggingDriver:
+        type: string
+      MemTotal:
+        description: 内存总量
+        type: integer
+        format: int64
+      MemoryLimit:
+        type: boolean
+      NCPU:
+        description: cpu数量
+        type: integer
+        format: int64
+      NEventsListener:
+        type: integer
+        format: int64
+      NFd:
+        type: integer
+        format: int64
+      NGoroutines:
+        type: integer
+        format: int64
+      Name:
+        description: 主机名
+        type: string
+      NoProxy:
+        type: string
+      OSType:
+        type: string
+      OomKillDisable:
+        type: boolean
+      OperatingSystem:
+        type: string
+      Plugins:
+        description: 插件信息
+        type: object
+      ServerVersion:
+        description: docker版本
+        type: string
+      SwapLimit:
+        type: boolean
+      Swarm:
+        type: object
+        properties:
+          Cluster:
+            description: 集群信息
+            type: object
+            properties:
+              ID:
+                type: string
+              CreatedAt:
+                type: string
+              Spec:
+                $ref: '#/definitions/SwarmSpec'
+              UpdatedAt:
+                type: string
+              Version:
+                type: object
+                properties:
+                  Index:
+                    type: integer
+                    format: int64
+          ControlAvailable:
+            type: boolean
+          Error:
+            type: string
+          LocalNodeState:
+            type: string
+          Managers:
+            description: 管理数
+            type: integer
+            format: int64
+          NodeAddr:
+            description: 主机ip
+            type: string
+          NodeId:
+            description: 主机id
+            type: string
+          Nodes:
+            description: 主机数
+            type: integer
+            format: int64
+          RemoteManagers:
+            description: 所有manager信息
+            type: array
+            items:
+              type: object
+              properties:
+                Addr:
+                  type: string
+                NodeID:
+                  type: string
+      SystemStatus:
+        type: string
+      SystemTime:
+        description: 系统时间
+        type: string
+
+  Container:
+    type: object
+    properties:
+      Command:
+        description: 容器的command
+        type: string
+      Created:
+        description: 容器创建的时间戳
+        type: integer
+        format: int64
+      Id:
+        description: 容器id
+        type: string
+      Image:
+        description: 容器使用的镜像名称
+        type: string
+      Labels:
+        description: 容器标签
+        type: object
+      Mounts:
+        type: array
+        items:
+          type: object
+          properties:
+            Destination:
+              description: 容器路径
+              type: string
+            Driver:
+              description: 驱动
+              type: string
+            Name:
+              description: 名称
+              type: string
+            RW:
+              description: 读写
+              type: boolean
+            Source:
+              description: 主机路径
+              type: string
+      Names:
+        type: array
+        items:
+          description: 容器名称
+          type: string
+      NetworkSettings:
+        type: object
+        properties:
+          Networks:
+            description: 网络信息
+            type: object
+      Ports:
+        type: array
+        items:
+          type: object
+          properties:
+            IP:
+              description: IP
+              type: string
+            PrivatePort:
+              description: 内部端口
+              type: integer
+              format: int64
+            PublicPort:
+              description: 公共端口
+              type: integer
+              format: int64
+            Type:
+              description: 类型,tcp或其他
+              type: string
+      State:
+        description: 状态
+        type: string
+      Status:
+        description: 运行时间
+        type: string
+
+  ContainerInfo:
+    type: object
+    properties:
+      Args:
+        description: 参数列表
+        type: array
+        items:
+          type: string
+      Config:
+        type: object
+        properties:
+          Cmd:
+            description: 启动命令
+            type: array
+            items:
+              type: string
+          Entrypoint:
+            description: 入口路径
+            type: object
+          Env:
+            description: 环境变量
+            type: array
+            items:
+              type: string
+          ExposedPorts:
+            description: 暴露端口
+            type: object
+          Hostname:
+            description: 主机名
+            type: string
+          Image:
+            description: 镜像名称
+            type: string
+          Labels:
+            description: 标签
+            type: object
+      Created:
+        description: 创建时间
+        type: string
+      Driver:
+        description: 驱动
+        type: string
+      GraphDriver:
+        description: 图标驱动
+        type: object
+        properties:
+          Data:
+            description: 驱动数据
+            type: object
+          Name:
+            description: 驱动名称
+            type: string
+      HostConfig:
+        description: 主机配置
+        type: object
+      HostnamePath:
+        description: hostname文件路径
+        type: string
+      HostsPath:
+        description: hosts文件路径
+        type: string
+      Id:
+        description: id
+        type: string
+      Image:
+        description: 镜像id
+        type: string
+      LogPath:
+        description: log文件路径
+        type: string
+      Name:
+        description: 容器名称
+        type: string
+      NetworkSettings:
+        type: object
+        properties:
+          Networks:
+            description: 网络信息
+            type: object
+          Ports:
+            description: 端口信息
+            type: object
+          SandboxKey:
+            description: 沙盒key
+            type: string
+      Path:
+        description: 路径
+        type: string
+      ResolvConfPath:
+        description: resolv.conf文件路径
+        type: string
+      State:
+        type: object
+        properties:
+          FinishedAt:
+            description: 完成时间
+            type: string
+          PID:
+            description: PID
+            type: integer
+            format: int64
+          Running:
+            description: 是否运行
+            type: boolean
+          StartedAt:
+            description: 开始时间
+            type: string
+          Status:
+            description: 状态
+            type: string
+
+  Volume:
+    type: object
+    properties:
+      Driver:
+        type: string
+        description: 驱动
+      Mountpoint:
+        type: string
+        description: 挂载点
+      Name:
+        type: string
+        description: 名称
+
+  Service:
+    type: object
+    properties:
+      CreatedAt:
+        type: string
+        description: 创建时间
+      Endpoint:
+        type: object
+        properties:
+          Ports:
+            description: 端口映射列表
+            type: array
+            items:
+              $ref: '#/definitions/PortConfig'
+          Spec:
+            $ref: '#/definitions/EndpointSpec'
+          VirtualIPs:
+            description: 虚拟IP信息
+            type: array
+            items:
+              type: object
+              properties:
+                Addr:
+                  type: string
+                NetworkID:
+                  type: string
+      ID:
+        type: string
+        description: id
+      Spec:
+        $ref: '#/definitions/ServiceSpec'
+      UpdateStatus:
+        type: object
+        properties:
+          CompletedAt:
+            type: string
+            description: 完成时间
+          StartedAt:
+            type: string
+            description: 开始时间
+      UpdatedAt:
+        type: string
+        description: 更新时间
+      Version:
+        type: object
+        description: 版本
+        properties:
+          Index:
+            type: integer
+            format: int64
+
+  ServiceTask:
+    type: object
+    properties:
+      CreatedAt:
+        type: string
+        description: 创建时间
+      DesiredState:
+        type: string
+        description: 任务状态
+      ID:
+        type: string
+        description: id
+      NetworksAttachments:
+        type: array
+        items:
+          description: 网络信息
+          type: object
+      NodeID:
+        type: string
+        description: 节点 id
+      ServiceID:
+        type: string
+        description: 服务 id
+      Slot:
+        type: integer
+        format: int32
+      Spec:
+        $ref: '#/definitions/TaskSpec'
+      Status:
+        type: object
+        properties:
+          ContainerStatus:
+            type: object
+            properties:
+              ContainerID:
+                type: string
+                description: 容器 id
+              PID:
+                type: integer
+                format: int64
+                description: 进程 id
+          Message:
+            type: string
+            description: 信息
+          State:
+            type: string
+            description: 状态
+          Timestamp:
+            type: string
+            description: 时间
+      UpdatedAt:
+        type: string
+        description: 更新时间
+      Version:
+        type: object
+        description: 版本
+        properties:
+          Index:
+            type: integer
+            format: int64

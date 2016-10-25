@@ -1,0 +1,153 @@
+<h1>{/'Create Host-Only network' | translate/}</h1>
+<form name="createSingleNetwork" class="form-main">
+    <div class="form-group" layout="column">
+        <label>{/'Network Name' | translate/}<span class="required">*</span>
+            <small></small>
+        </label>
+        <div class="form-control">
+            <input id="node-network-name" type="text" data-ng-model="nodeCreateNetworkCtrl.form.Name"
+                   data-required="required" name="name"
+                   data-ng-pattern="/^[A-Za-z0-9]+$/">
+        </div>
+        <div ng-messages="createSingleNetwork.name.$error" ng-if="createSingleNetwork.name.$dirty" role="alert">
+            <p class="help-text"
+               ng-message="required">
+                <small>{/'Name field is required' | translate/}</small>
+            </p>
+            <p class="help-text"
+               ng-message="pattern">
+                <small>{/'Only number and letter permitted' | translate/}</small>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group" layout="column">
+        <label>{/'Subnet Mask' | translate/}
+            <small></small>
+        </label>
+        <div class="form-control">
+            <input id="node-network-subnet" type="text"
+                   data-ng-model="nodeCreateNetworkCtrl.form.IPAM.Config[0].Subnet"
+                   name="Subnet" placeholder="例:172.20.0.0/16 (可选)"
+                   data-ng-pattern="/^\d{1,3}(\.\d{1,3}){3}\/\d{1,2}$/">
+        </div>
+        <div ng-messages="createSingleNetwork.Subnet.$error" ng-if="createSingleNetwork.Subnet.$dirty" role="alert">
+            <p class="help-text"
+               ng-message="pattern">
+                <small>子网掩码不合法</small>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group" layout="column">
+        <label>{/'Gateway' | translate/}
+            <small></small>
+        </label>
+        <div class="form-control">
+            <input id="node-network-gateway" type="text"
+                   data-ng-model="nodeCreateNetworkCtrl.form.IPAM.Config[0].Gateway"
+                   name="Gateway" placeholder="例:172.20.10.11 (可选)"
+                   data-ng-pattern="/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/">
+        </div>
+        <div ng-messages="createSingleNetwork.Gateway.$error" ng-if="createSingleNetwork.Gateway.$dirty"
+             role="alert">
+            <p class="help-text"
+               ng-message="pattern">
+                <small>{/'Illegal Gateway' | translate/}</small>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group" layout="column">
+        <label>{/'IP range' | translate/}
+            <small></small>
+        </label>
+        <div class="form-control">
+            <input id="node-network-ip" type="text"
+                   data-ng-model="nodeCreateNetworkCtrl.form.IPAM.Config[0].IPRange"
+                   name="IPRange" placeholder="例:172.20.10.0/24 (可选)"
+                   data-ng-pattern="/^\d{1,3}(\.\d{1,3}){3}\/\d{1,2}$/"
+                   ng-required="nodeCreateNetworkCtrl.form.IPAM.Config[0].IPRange">
+        </div>
+        <div ng-messages="createSingleNetwork.IPRange.$error" ng-if="createSingleNetwork.IPRange.$dirty"
+             role="alert">
+            <p class="help-text"
+               ng-message="pattern">
+                <small>IP 范围不合法</small>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group" layout="column">
+        <label>{/'Internal Network' | translate/}</label>
+        <div class="form-control" layout="row" layout-align="start center">
+            <md-radio-group id="node-network-internal" ng-model="nodeCreateNetworkCtrl.form.Internal" layout="row"
+                            data-required="required" aria-label="Network Internal" flex>
+                <div flex="25">
+                    <md-radio-button id="node-network-internal-true" ng-value="true" class="md-primary">{/'YES' | translate/}</md-radio-button>
+                </div>
+                <div flex="25">
+                    <md-radio-button id="node-network-internal-false" ng-value="false" class="md-primary">否</md-radio-button>
+                </div>
+            </md-radio-group>
+        </div>
+        <p class="help-text"></p>
+    </div>
+
+    <div class="form-group" layout="column">
+        <label>{/'Labels' | translate/}
+            <small>{/'Multiple labels supported' | translate/}</small>
+        </label>
+        <div class="sub-button">
+            <md-button id="node-network-add-label" class="md-raised md-success md-small"
+                       data-ng-click="nodeCreateNetworkCtrl.addLabel()">
+                {/'Add labels' | translate/}
+            </md-button>
+        </div>
+        <div data-ng-repeat="label in nodeCreateNetworkCtrl.labels track by $index">
+            <ng-form name="labelForm">
+                <div class="form-control sub-group" layout="row" layout-align="start center">
+                    <input id="node-network-label-key-{/$index/}" type="text" placeholder="KEY" flex="20"
+                           data-ng-model="label.key" data-required="required"
+                           name="labelKey" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/"
+                           dm-check-include="nodeCreateNetworkCtrl.listLabel($index)">
+
+                    <input id="node-network-label-value-{/$index/}" type="text" placeholder="VALUE" flex="20"
+                           data-ng-model="label.value" data-required="required"
+                           name="labelValue" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/">
+
+                    <md-button id="node-network-label-delete-{/$index/}" class="md-icon-button md-primary" aria-label="delete"
+                               data-ng-click="nodeCreateNetworkCtrl.deleteLabel($index)">
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                    </md-button>
+                </div>
+            </ng-form>
+            <div ng-messages="labelForm.labelKey.$error" ng-if="labelForm.labelKey.$dirty" role="alert">
+                <p class="help-text"
+                   ng-message="pattern">
+                    <small>{/'Chinese KEY is not permitted' | translate/}</small>
+                </p>
+                <p class="help-text"
+                   ng-message="dmCheckInclude">
+                    <small>{/'Duplicated KEY is not permitted' | translate/}</small>
+                </p>
+            </div>
+
+            <div ng-messages="labelForm.labelValue.$error" ng-if="labelForm.labelValue.$dirty"
+                 role="alert">
+                <p class="help-text"
+                   ng-message="pattern">
+                    <small>{/'Chinese VALUE is not permitted' | translate/}</small>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="form-buttons">
+        <md-button id="node-network-create" class="md-raised md-primary"
+                   data-ng-disabled="createSingleNetwork.$invalid"
+                   data-ng-click="nodeCreateNetworkCtrl.create()">{/'Create' | translate/}
+        </md-button>
+        <md-button id="node-network-cancel" data-ng-click="rootCtrl.goBack()">{/'Cancel' | translate/}</md-button>
+    </footer>
+</form>

@@ -1,0 +1,21 @@
+<md-table-container data-ng-if="nodeContainerDiffCtrl.diffs">
+    <table md-table>
+        <thead md-head>
+        <tr md-row>
+            <th md-column>{/'Change Mode' | translate/}</th>
+            <th md-column>{/'File Path' | translate/}</th>
+        </tr>
+        </thead>
+        <tbody id="node-container-detail-diffs" md-body>
+        <tr md-row ng-repeat="diff  in  nodeContainerDiffCtrl.diffs">
+            <td md-cell>
+                <p ng-class="{'text-info': diff.Kind === 0, 'text-success': diff.Kind === 1, 'text-danger': diff.Kind === 2}">
+                    {/DIFF_KIND[diff.Kind] | translate/}
+                </p>
+            </td>
+            <td md-cell>{/diff.Path/}</td>
+        </tr>
+        </tbody>
+    </table>
+</md-table-container>
+<div class="no-info-main" data-ng-if="!nodeContainerDiffCtrl.diffs">{/'None' | translate/}</div>

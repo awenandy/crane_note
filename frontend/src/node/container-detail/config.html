@@ -1,0 +1,125 @@
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Basic Information' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <div flex="30"><h5>{/'Image' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeContainerConfigCtrl.container.Config.Image/}</p></div>
+        <div flex="30"><h5>{/'Digest' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeContainerConfigCtrl.container.Image/}</p></div>
+        <div flex="30"><h5>{/'Container hostname' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeContainerConfigCtrl.container.Config.Hostname/}</p></div>
+        <div flex="30"><h5>{/'Network Mode' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeContainerConfigCtrl.container.HostConfig.NetworkMode/}</p></div>
+        <div flex="30"><h5>{/'HostnamePath' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeContainerConfigCtrl.container.HostnamePath/}</p></div>
+        <div flex="30"><h5>{/'HostnamePath' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeContainerConfigCtrl.container.HostsPath/}</p></div>
+        <div flex="30"><h5>{/'LogPath' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeContainerConfigCtrl.container.LogPath/}</p></div>
+        <div flex="30"><h5>{/'ResolvConfPath' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeContainerConfigCtrl.container.ResolvConfPath/}</p></div>
+    </div>
+</section>
+
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Environment' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <table id="container-config" cellpadding="0" cellspacing="0" dm-empty-display="nodeContainerConfigCtrl.container.Config.Env">
+            <tr>
+                <th>KEY</th>
+                <th>VALUE</th>
+            </tr>
+
+            <tr ng-repeat="env  in  nodeContainerConfigCtrl.container.Config.Env">
+                <td>{/env | spliceStr: '=': 'key'/}</td>
+                <td>{/env | spliceStr: '=': 'value'/}</td>
+            </tr>
+        </table>
+    </div>
+</section>
+
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Port Mapping' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <table cellpadding="0" cellspacing="0" dm-empty-display="nodeContainerConfigCtrl.container.Config.ExposedPorts">
+            <tr>
+                <th>{/'Port' | translate/}</th>
+                <th>{/'Protocol' | translate/}</th>
+            </tr>
+
+            <tr ng-repeat="(port, protocol)  in  nodeContainerConfigCtrl.container.Config.ExposedPorts">
+                <td>{/port | spliceStr: '/': 'key'/}</td>
+                <td>{/port | spliceStr: '/': 'value'/}</td>
+            </tr>
+        </table>
+    </div>
+</section>
+
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Network Configuration' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <table cellpadding="0" cellspacing="0"
+               dm-empty-display="nodeContainerConfigCtrl.container.NetworkSettings.Networks">
+            <tr>
+                <th>{/'Network' | translate/}</th>
+                <th>{/'Gateway' | translate/}</th>
+                <th>{/'IP Address' | translate/}</th>
+                <th>{/'MAC Address' | translate/}</th>
+            </tr>
+
+            <tr data-ng-repeat="(name, network) in nodeContainerConfigCtrl.container.NetworkSettings.Networks">
+                <td><a data-ui-sref="node.networkDetail({node_id:$stateParams.node_id, network_id: network.NetworkID})">{/name/}</a>
+                </td>
+                <td>{/network.Gateway/}</td>
+                <td>{/network.IPAddress/}</td>
+                <td>{/network.MacAddress/}</td>
+            </tr>
+        </table>
+    </div>
+</section>
+
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Container tag"' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <table cellpadding="0" cellspacing="0" dm-empty-display="nodeContainerConfigCtrl.container.Config.Labels">
+            <tr>
+                <th>KEY</th>
+                <th>VALUE</th>
+            </tr>
+
+            <tr ng-repeat="(key, value)  in  nodeContainerConfigCtrl.container.Config.Labels">
+                <td>{/key/}</td>
+                <td>{/value/}</td>
+            </tr>
+        </table>
+    </div>
+</section>
+
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Volume' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <table cellpadding="0" cellspacing="0" dm-empty-display="nodeContainerConfigCtrl.container.Config.Volumes">
+            <tr>
+                <th>{/'Path' | translate/}</th>
+            </tr>
+
+            <tr ng-repeat="(volume, obj)  in  nodeContainerConfigCtrl.container.Config.Volumes">
+                <td>{/volume/}</td>
+            </tr>
+        </table>
+    </div>
+</section>
+
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'CMD' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <table cellpadding="0" cellspacing="0" dm-empty-display="nodeContainerConfigCtrl.container.Config.Cmd">
+            <tr>
+                <th>CMD</th>
+            </tr>
+
+            <tr ng-repeat="cmd in nodeContainerConfigCtrl.container.Config.Cmd track by $index">
+                <td>{/cmd/}</td>
+            </tr>
+        </table>
+    </div>
+</section>

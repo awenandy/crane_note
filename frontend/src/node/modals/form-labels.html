@@ -1,0 +1,53 @@
+<md-dialog aria-label="select image">
+    <form name="staticForm" class="form-main">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>{/'Node labels' | translate/}</h2>
+                <span flex></span>
+                <md-button id="node-dialog-label-cancel" class="md-icon-button" ng-click="formCtrl.cancel()" aria-label="cancel">
+                    <i class="fa fa-close"></i>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="form-group">
+                <div class="sub-button">
+                    <md-button id="node-dialog-label-add" class="md-raised md-success md-small" data-ng-click="formCtrl.add()">
+                        {/'Add Node label' | translate/}
+                    </md-button>
+                </div>
+            </div>
+            <div data-ng-repeat="label in formCtrl.labels track by $index" class="form-group">
+                <ng-form name="labelForm">
+                    <div class="form-control" layout="row" layout-align="start center">
+                        <input id="node-dialog-label-key-{/$index/}" flex="40" type="text" placeholder="KEY" data-ng-model="label.key" md-autofocus
+                               data-required="required" name="labelKey" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/"
+                               dm-check-include="formCtrl.checkRepeatKey($index)">
+                        <input id="node-dialog-label-value-{/$index/}" flex="40" flex-offset="5" type="text" placeholder="VALUE" data-ng-model="label.value"
+                               data-required="required" name="labelValue" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/">
+                        <div flex-offset="5">
+                            <md-button id="node-dialog-label-delete-{/$index/}" class="md-icon-button md-primary" aria-label="trash"
+                                       data-ng-click="formCtrl.delete($index)">
+                                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                            </md-button>
+                        </div>
+                    </div>
+                </ng-form>
+                <div ng-messages="labelForm.labelKey.$error" ng-if="labelForm.labelKey.$dirty" role="alert">
+                    <p class="help-info text-danger" ng-message="pattern">{/'Chinese KEY not permitted' | translate/}</p>
+                    <p class="help-info text-danger" ng-message="dmCheckInclude">{/'Duplicated KEY is not permitted' | translate/}</p>
+                </div>
+                <div ng-messages="labelForm.labelValue.$error" ng-if="labelForm.labelValue.$dirty" role="alert">
+                    <p class="help-info text-danger" ng-message="pattern">{/'Chinese VALUE not permitted' | translate/}</p>
+                </div>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button id="node-dialog-label-action-cancel" ng-click="formCtrl.cancel()" aria-label="cancel">{/'Cancel' | translate/}</md-button>
+            <md-button id="node-dialog-label-action-ok" data-ng-disabled="staticForm.$invalid" data-ng-click="formCtrl.ok()" aria-label="ok"
+                       class="md-primary">{/'Confirm' | translate/}
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
+

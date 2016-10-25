@@ -1,0 +1,98 @@
+<h1>{/'Add volume' | translate/}</h1>
+<form name="createVolume" class="form-main">
+    <div class="form-group" layout="column">
+        <label>{/'Volume name' | translate/}<span class="required">*</span>
+            <small></small>
+        </label>
+        <div class="form-control">
+            <input id="node-add-name" type="text" name="name"
+                   data-ng-model="nodeCreateVolumeCtrl.form.Name"
+                   data-ng-pattern="/^[A-Za-z0-9]+$/"
+                   data-required="required">
+        </div>
+        <div ng-messages="createVolume.name.$error" ng-if="createVolume.name.$dirty"
+             role="alert">
+            <p class="help-text"
+               ng-message="required">
+                <small>{/'Volume Name is required' | translate/}</small>
+            </p>
+
+            <p class="help-text"
+               ng-message="pattern">
+                <small>{/'Must be letter or digit' | translate/}</small>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group" layout="column">
+        <label>{/'Driver' | translate/}<span class="required">*</span>
+            <small></small>
+        </label>
+        <div class="form-control">
+            <div class="form-control">
+                <md-select id="node-select-driver" data-ng-model="nodeCreateVolumeCtrl.form.Driver" data-required="required"
+                           aria-label="selectDriver" name="driver">
+                    <md-option id="node-option-local" value="local">
+                        {/'Vol_driver_local' | translate/}
+                    </md-option>
+                </md-select>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group" layout="column">
+        <label>{/'Labels' | translate/}
+            <small>{/'Multiple labels supported' | translate/}</small>
+        </label>
+        <div class="sub-button">
+            <md-button id="node-add-label" class="md-raised md-success md-small"
+                       data-ng-click="nodeCreateVolumeCtrl.addLabel()">
+                {/'Add labels' | translate/}
+            </md-button>
+        </div>
+        <div data-ng-repeat="label in nodeCreateVolumeCtrl.labels track by $index">
+            <ng-form name="labels">
+                <div class="form-control sub-group" layout="row" layout-align="start center">
+                    <input id="node-label-key-{/$index/}" type="text" placeholder="KEY" flex="20"
+                           data-ng-model="label.key" data-required="required"
+                           name="labelKey" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/"
+                           dm-check-include="nodeCreateVolumeCtrl.listLabel($index)">
+
+                    <input id="node-label-value-{/$index/}" type="text" placeholder="VALUE" flex="20"
+                           data-ng-model="label.value" data-required="required"
+                           name="labelValue" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/">
+
+                    <md-button id="node-label-delete-{/$index/}" class="md-icon-button md-primary" aria-label="delete"
+                               data-ng-click="nodeCreateVolumeCtrl.deleteLabel($index)">
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                    </md-button>
+                </div>
+            </ng-form>
+            <div ng-messages="labels.labelKey.$error" ng-if="labels.labelKey.$dirty" role="alert">
+                <p class="help-text"
+                   ng-message="pattern">
+                    <small>{/'Chinese KEY is not permitted' | translate/}</small>
+                </p>
+                <p class="help-text"
+                   ng-message="dmCheckInclude">
+                    <small>{/'Duplicated KEY is not permitted' | translate/}</small>
+                </p>
+            </div>
+
+            <div ng-messages="labels.labelValue.$error" ng-if="labels.labelValue.$dirty" role="alert">
+                <p class="help-text"
+                   ng-message="pattern">
+                    <small>{/'Chinese VALUE is not permitted' | translate/}</small>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="form-buttons">
+        <md-button id="node-volume-create" class="md-raised md-primary"
+                   data-ng-click="nodeCreateVolumeCtrl.create()"
+                   data-ng-disabled="createVolume.$invalid">{/'Create' | translate/}
+        </md-button>
+        <md-button id="node-volume-cancel" data-ng-click="rootCtrl.goBack()">{/'Cancel' | translate/}</md-button>
+    </footer>
+</form>

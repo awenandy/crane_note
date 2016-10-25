@@ -1,0 +1,75 @@
+<md-table-container>
+    <table id="node-container-list" md-table>
+        <thead md-head>
+        <tr md-row>
+            <th md-column>ID</th>
+            <th md-column>{/'Name' | translate/}</th>
+            <th md-column>{/'Internal address' | translate/}</th>
+            <th md-column>{/'Service' | translate/}</th>
+            <th md-column>{/'Task' | translate/}</th>
+            <th md-column>{/'Status/Running duration' | translate/}</th>
+            <th md-column>{/'Created At' | translate/}</th>
+            <th md-column>{/'Operation' | translate/}</th>
+        </tr>
+        </thead>
+        <tbody md-body>
+        <tr md-row ng-repeat="container in nodeContainerCtrl.containers">
+            <td md-cell>
+                <a id="node-container-id-{/$index/}" class="ellipsis"
+                   data-ui-sref="node.containerDetail({node_id: $stateParams.node_id, container_id: container.Id})">{/container.Id
+                    | limitTo: ID_LIMIT_LENGTH/}
+                    <md-tooltip md-direction="top">{/container.Id/}</md-tooltip>
+                </a>
+            </td>
+            <td md-cell>
+                <a id="node-container-name-{/$index/}" class="ellipsis"
+                   data-ui-sref="node.containerDetail({node_id: $stateParams.node_id, container_id: container.Id})">{/container.Names[0].substring(1)/}
+                    <md-tooltip md-direction="top">{/container.Names[0].substring(1)/}</md-tooltip>
+                </a>
+            </td>
+            <td md-cell>
+                <span ng-if="!container.Ports.length" ng-class="{'no-info': !container.Ports.length}">{/'Not configured' | translate/}</span>
+                <ul>
+                    <li ng-repeat="port in container.Ports">
+                        <span ng-show="container.NetworkSettings.Networks.bridge.IPAddress">{/container.NetworkSettings.Networks.bridge.IPAddress/}:</span>{/port.PrivatePort/}/{/port.Type/}
+                    </li>
+                </ul>
+            </td>
+            <td md-cell><span ng-class="{'no-info': !container.Labels['com.docker.swarm.service.name']}">{/container.Labels['com.docker.swarm.service.name'] || ('Not configured' | translate)/}</span>
+            </td>
+            <td md-cell><span ng-class="{'no-info': !container.Labels['com.docker.swarm.task.name']}">{/container.Labels['com.docker.swarm.task.name'] || ('Not configured' | translate)/}</span>
+            </td>
+            <td md-cell>
+                <ul>
+                    <li class="{/CONTAINER_STATUS_LABELS_CLASS[container.State]/}">
+                        {/CONTAINER_STATUS_LABELS[container.State] | translate/}
+                    </li>
+                    <li>{/container.Status | statusZh /}</li>
+                </ul>
+            </td>
+            <td md-cell>{/container.Created * 1000 | date: 'yyyy-MM-dd HH:mm:ss'/}</td>
+            <td md-cell>
+                <md-menu md-offset="0 -5">
+                    <md-button id="node-container-oprate-{/$index/}" class="md-icon-button" aria-label="More" ng-click="$mdOpenMenu($event)">
+                        <i class="fa fa-ellipsis-h"></i>
+                    </md-button>
+                    <md-menu-content width="2">
+                        <md-menu-item>
+                            <md-button id="node-container-remove-{/$index/}" aria-label="rm" data-ng-click="nodeContainerCtrl.removeContainer(container.Id)">
+                                {/'Remove' | translate/}
+                                <strong>(rm)</strong>
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button id="node-coniner-kill-{/$index/}" aria-label="kill" data-ng-click="nodeContainerCtrl.killContainer(container.Id)">
+                                {/'Kill' | translate/}
+                                <strong>(kill)</strong>
+                            </md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</md-table-container>

@@ -1,0 +1,19 @@
+<header id="header-main">
+    <h1>{/'How to create a docker image' | translate/}</h1>
+</header>
+
+<p>
+    <code>
+        docker login {/DOCKER_REGISTRY_URL/} -u{/userName/} -pYOUR_PASSWORD
+    </code>
+</p>
+
+<p>
+    <code>
+        docker push {/DOCKER_REGISTRY_URL/}{/userName.substring(0, userName.indexOf('@'))/}/IMAGE_NAME
+    </code>
+</p>
+
+<p>
+    {/'How to create a docker image note' | translate/} --insecure-registry={/DOCKER_REGISTRY_URL/}
+</p>

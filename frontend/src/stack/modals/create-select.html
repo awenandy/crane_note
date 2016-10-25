@@ -1,0 +1,47 @@
+<md-dialog aria-label="select image">
+    <form name="staticForm" class="form-main">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>{/'Create in the following ways' | translate/}</h2>
+                <span flex></span>
+                <md-button id="stack-modal-cancel" class="md-icon-button" ng-click="formCtrl.cancel()"
+                           aria-label="cancel">
+                    <i class="fa fa-close"></i>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content layout="row" style="width: 600px;">
+            <div flex="30">
+                <md-card id="modal_createByJson" data-ng-click="formCtrl.ok('stack.createByJson')">
+                    <md-card-title>
+                        <md-card-title-text>
+                            <i class="fa fa-code"></i>
+                            <span class="md-headline">{/'In DAB' | translate/}</span>
+                        </md-card-title-text>
+                    </md-card-title>
+                </md-card>
+            </div>
+            <div flex="30" flex-offset="5">
+                <md-card id="modal_createByForm" data-ng-click="formCtrl.ok('stack.createByForm')">
+                    <md-card-title>
+                        <md-card-title-text>
+                            <i class="fa fa-mouse-pointer"></i>
+                            <span class="md-headline">{/'In Form Wizard' | translate/}</span>
+                        </md-card-title-text>
+                    </md-card-title>
+                </md-card>
+            </div>
+            <div flex="30" flex-offset="5" dm-display-components="catalog">
+                <md-card id="modal_catalogs" data-ng-click="formCtrl.ok('registry.list.catalogs')">
+                    <md-card-title>
+                        <md-card-title-text>
+                            <i class="fa fa-shopping-cart"></i>
+                            <span class="md-headline">{/'In Stack template' | translate/}</span>
+                        </md-card-title-text>
+                    </md-card-title>
+                </md-card>
+            </div>
+        </md-dialog-content>
+    </form>
+</md-dialog>
+

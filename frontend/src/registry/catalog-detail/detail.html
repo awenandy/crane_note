@@ -1,0 +1,61 @@
+<md-tabs md-dynamic-height md-border-bottom>
+    <md-tab label="{/'Basic Information' | translate/}">
+        <form name="staticForm" class="form-main">
+            <div class="form-group" layout="column">
+                <label>{/'Stack Template Name' | translate/}<span class="required">*</span>
+                    <small></small>
+                </label>
+                <div class="form-control">
+                    <input id="image-catalog-namespace" type="text" data-required="required" name="stackName" focus-me
+                           data-ng-model="catalogDetailCtrl.form.Namespace">
+                </div>
+                <div ng-messages="staticForm.stackName.$error" ng-if="staticForm.stackName.$dirty" role="alert">
+                    <p class="help-text"
+                       ng-message="required">
+                        <small>{/'Name field is required' | translate/}</small>
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-group" layout="column">
+                <label id="image-DAB-doc" dm-doc-link='https://blog.docker.com/2016/06/docker-app-bundle/'>DAB<span
+                        class="required">*</span></label>
+                <div id="image-catalog-stack-div" class="form-control">
+                    <textarea id="image-catalog-stack" ui-ace="catalogDetailCtrl.aceOption" data-ng-model="catalogDetailCtrl.stack"
+                              data-required="required" name="Stack"
+                              data-ng-change="catalogDetailCtrl.stackChange()">
+                    </textarea>
+                </div>
+
+                <div ng-messages="staticForm.Stack.$error" ng-if="staticForm.Stack.$dirty"
+                     role="alert">
+                    <p class="text-danger help-text"
+                       ng-message="required">
+                        <small>{/'Volume Name is required' | translate/}</small>
+                    </p>
+                </div>
+                <p class="text-danger help-text"
+                   data-ng-show="catalogDetailCtrl.errorInfo.stack">
+                    {/catalogDetailCtrl.errorInfo.stack/}
+                </p>
+            </div>
+
+            <footer class="form-buttons">
+                <md-button id="image-catalog-detail-ctreate" class="md-raised md-primary"
+                           data-ng-disabled="staticForm.$invalid  || catalogDetailCtrl.errorInfo.stack"
+                           data-ng-click="catalogDetailCtrl.create()">
+                    {/'Create' | translate/}
+                </md-button>
+            </footer>
+        </form>
+    </md-tab>
+
+    <md-tab label="{/'Detail' | translate/}">
+        <md-content class="main-tab-content">
+            <div class="no-info-main" data-ng-if="!catalogDetailCtrl.description">
+                {/'No details' | translate/}
+            </div>
+            <div style="color: #EEE; line-height: 2;">{/catalogDetailCtrl.description/}</div>
+        </md-content>
+    </md-tab>
+</md-tabs>

@@ -1,0 +1,22 @@
+<header layout="row" id="header-main">
+    <h1 flex="auto">
+        <i class="fa fa-stack-overflow" aria-hidden="true"></i>
+        {/stackDetailCtrl.stack.Namespace/}
+    </h1>
+
+    <div flex="none">
+        <md-button id="delete-stack" class="md-button md-primary md-small md-raised"
+                   data-ng-click="stackDetailCtrl.deleteStack($event)" aria-label="Delete Stack">
+            <i class="fa fa-trash" aria-hidden="true"></i> {/'Delete Stack' | translate/}
+        </md-button>
+        <md-button id="add-catalog" class="md-button md-primary md-small md-raised"
+                   data-ng-click="$state.go('registry.createCatalog', {stack_name: $stateParams.stack_name})"
+                   aria-label="Save as stack template">
+            <i class="fa fa-plus" aria-hidden="true"></i>{/'Save as stack template' | translate/}
+        </md-button>
+    </div>
+</header>
+<md-tabs md-dynamic-height md-border-bottom>
+    <md-tab label="{/'Services' | translate/}" dm-tab-sref="stack.detail.service"></md-tab>
+</md-tabs>
+<md-content ui-view></md-content>

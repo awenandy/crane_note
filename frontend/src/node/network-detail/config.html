@@ -1,0 +1,60 @@
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Basic Information' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <div flex="30"><h5>{/'Scope' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeNetworkConfigCtrl.network.Scope/}</p></div>
+        <div flex="30"><h5>{/'Support IPv6' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeNetworkConfigCtrl.network.EnableIPv6 ? 'YES' : 'NO' | translate/}</p></div>
+        <div flex="30"><h5>{/'Host-Only network' | translate/}</h5></div>
+        <div flex="70"><p>{/nodeNetworkConfigCtrl.network.Internal ? 'YES' : 'NO' | translate/}</p></div>
+        <div flex="30"><h5>{/'Options' | translate/}</h5></div>
+        <div flex="70" dm-empty-display="nodeNetworkConfigCtrl.network.Options" dm-empty-text="{/'Not configured' | translate/}">
+            <ul>
+                <li data-ng-repeat="(key, value) in nodeNetworkConfigCtrl.network.Options">{/key/} : {/value/}</li>
+            </ul>
+        </div>
+        <div flex="30"><h5>{/'Labels' | translate/}</h5></div>
+        <div flex="70" dm-empty-display="nodeNetworkConfigCtrl.network.Labels" dm-empty-text="{/'Not configured' | translate/}">
+            <ul>
+                <li data-ng-repeat="(key, value) in nodeNetworkConfigCtrl.network.Labels">{/key/} : {/value/}</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Address Management' | translate/}</h2>
+    <div flex="80" layout="row" layout-wrap>
+        <div flex="30"><h5>{/'Subnet Mask' | translate/}</h5></div>
+        <div flex="70"><p ng-class="{'no-info': !nodeNetworkConfigCtrl.network.IPAM.Config[0].Subnet}">
+            {/nodeNetworkConfigCtrl.network.IPAM.Config[0].Subnet || ('Not configured' | translate)/}</p></div>
+        <div flex="30"><h5>{/'Gateway IP' | translate/}</h5></div>
+        <div flex="70"><p ng-class="{'no-info': !nodeNetworkConfigCtrl.network.IPAM.Config[0].Gateway}">
+            {/nodeNetworkConfigCtrl.network.IPAM.Config[0].Gateway || ('Not configured' | translate)/}</p></div>
+    </div>
+    </div>
+</section>
+
+<section layout="row" class="info-list-detail">
+    <h2 flex="20">{/'Connect containers' | translate/}</h2>
+    <div flex="80" dm-empty-display="nodeNetworkConfigCtrl.network.Containers">
+        <table id="node-network-detail-config-table">
+            <thead>
+            <tr>
+                <th>{/'Container Name' | translate/}</th>
+                <th>{/'IPv4 address' | translate/}</th>
+                <th>{/'IPv6 address' | translate/}</th>
+                <th>{/'MAC Address' | translate/}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="(key, value) in nodeNetworkConfigCtrl.network.Containers">
+                <td>{/value.Name/}</td>
+                <td><span ng-class="{'no-info': !value.IPv4Address}">{/value.IPv4Address || ('Not configured' | translate)/}</span></td>
+                <td><span ng-class="{'no-info': !value.IPv6Address}">{/value.IPv6Address || ('Not configured' | translate)/}</span></td>
+                <td><span ng-class="{'no-info': !value.MacAddress}">{/value.MacAddress || ('Not configured' | translate)/}</span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>

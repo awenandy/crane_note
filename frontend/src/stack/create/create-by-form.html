@@ -1,0 +1,810 @@
+<div data-ng-show="stackCreateByFormCtrl.step == 1">
+    <header class="header-main">
+        <h1>{/'Set a name for your stack' | translate/}</h1>
+    </header>
+    <form name="stepOneForm" class="form-main">
+        <div class="form-group" layout="column">
+            <label>{/'Stack Template Name' | translate/}<span class="required">*</span>
+                <small></small>
+            </label>
+            <div class="form-control">
+                <input id="createByForm-Namespace" type="text" data-ng-model="stackCreateByFormCtrl.form.Namespace"
+                       data-required="required" name="Name" focus-me
+                       data-ng-pattern="/^[A-Za-z0-9]+$/">
+            </div>
+            <div ng-messages="stepOneForm.Name.$error" ng-if="stepOneForm.Name.$dirty"
+                 role="alert">
+                <p class="text-danger help-text"
+                   ng-message="required">
+                    <small>{/'Name field is required' | translate/}</small>
+                </p>
+                <p class="text-danger help-text"
+                   ng-message="pattern">
+                    <small>{/'Only number and letter permitted' | translate/}</small>
+                </p>
+            </div>
+        </div>
+        <footer class="form-buttons">
+            <md-button id="stack-create-next" class="md-raised md-primary" data-ng-disabled="stepOneForm.$invalid"
+                       data-ng-click="stackCreateByFormCtrl.step = 2">{/'Next' | translate/}
+            </md-button>
+            <md-button id="stack-create-cancel" data-ng-click="rootCtrl.goBack()">{/'Cancel' | translate/}</md-button>
+        </footer>
+    </form>
+</div>
+
+<div data-ng-show="stackCreateByFormCtrl.step == 2">
+    <header class="header-main">
+        <h1>{/'Fill in the service information' | translate/}</h1>
+    </header>
+    <md-tabs md-dynamic-height md-border-bottom md-autoselect>
+        <md-tab data-ng-repeat="serve in stackCreateByFormCtrl.serveFormArray track by $index"
+                label="{/serve.Name || ('New Service' | translate)/}" id="serve{/$index/}">
+            <md-content>
+                <form id="staticForm{/$index/}" name="staticForm" class="form-main">
+                    <div class="form-group" layout="column">
+                        <label>{/'Name' | translate/} <em>--name</em><span class="required">*</span>
+                            <small></small>
+                        </label>
+                        <div class="form-control">
+                            <input id="service{/$index/}-Name" type="text" data-ng-model="serve.Name"
+                                   data-required="required" name="name"
+                                   data-ng-pattern="/^[A-Za-z0-9]+$/"
+                                   dm-check-include="stackCreateByFormCtrl.listNames($index)">
+                        </div>
+                        <div ng-messages="staticForm.name.$error" ng-if="staticForm.name.$dirty"
+                             role="alert">
+                            <p class="text-danger help-text"
+                               ng-message="required">
+                                <small>{/'Name field is required' | translate/}</small>
+                            </p>
+                            <p class="text-danger help-text"
+                               ng-message="pattern">
+                                <small>{/'Only number and letter permitted' | translate/}</small>
+                            </p>
+                            <p class="text-danger help-text"
+                               ng-message="dmCheckInclude">
+                                <small>{/'Duplicated service name is not permitted' | translate/}</small>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="form-group" layout="column">
+                        <label>{/'Image' | translate/} <em>image</em><span class="required">*</span></label>
+                        <div class="form-control">
+                            <input id="service{/$index/}-Image" type="text"
+                                   data-ng-model="serve.TaskTemplate.ContainerSpec.Image"
+                                   data-required="required" name="Image">
+                        </div>
+                        <div ng-messages="staticForm.Image.$error" ng-if="staticForm.Image.$dirty"
+                             role="alert">
+                            <p class="text-danger help-text"
+                               ng-message="required">
+                                <small>{/'Image is required' | translate/}</small>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="form-group" layout="column">
+                        <label>{/'Service Mode' | translate/} <em>--mode</em></label>
+                        <div class="form-control" layout="row" layout-align="start center">
+                            <md-radio-group id="service{/$index/}-Mode" data-ng-model="serve.defaultMode" layout="row"
+                                            aria-label="defaultMode"
+                                            data-ng-change="stackCreateByFormCtrl.modeChange(serve)"
+                                            layout-align="start center" flex>
+                                <div flex="25">
+                                    <md-radio-button value="Replicated" class="md-primary">{/'Replicated' | translate/}
+                                        <em>replicated</em>
+                                    </md-radio-button>
+                                    <input id="service{/$index/}-Replicas" type="number" min="0"
+                                           data-ng-show="serve.defaultMode === 'Replicated'"
+                                           data-ng-required="serve.defaultMode === 'Replicated'"
+                                           data-ng-model="serve.Mode.Replicated.Replicas" name="replicas">
+                                </div>
+                                <div flex="25">
+                                    <md-radio-button id="stack-create-global" value="Global" class="md-primary"
+                                                     flex-offset="5">{/'Global' | translate/}
+                                        <em>global</em>
+                                    </md-radio-button>
+                                </div>
+                            </md-radio-group>
+                        </div>
+                        <p class="text-danger help-text"></p>
+                    </div>
+
+                    <div class="form-group" layout="column">
+                        <label>{/'Select Network' | translate/} <em>--network</em></label>
+                        <div class="form-control">
+                            <md-select id="service{/$index/}-Networks" data-ng-model="serve.Networks" multiple
+                                       aria-label="Networks"
+                                       md-on-open="stackCreateByFormCtrl.loadNetworks()">
+                                <md-option id="service{/$index/}-network-value"
+                                           data-ng-repeat="network in stackCreateByFormCtrl.networks | filter: {Driver: '!bridge'}"
+                                           ng-value="network.Name">{/network.Name/}
+                                </md-option>
+                            </md-select>
+                        </div>
+                        <p class="text-danger help-text"></p>
+                    </div>
+
+                    <div class="form-group" layout="column" dm-display-components="registryauth">
+                        <label>{/'Registry Auth Name' | translate/} <em>--RegistryAuth</em></label>
+                        <div class="form-control">
+                            <md-select id="service{/$index/}-RegistryAuth" data-ng-model="serve.RegistryAuth"
+                                       aria-label="RegAuth"
+                                       md-on-open="stackCreateByFormCtrl.loadRegAuths()">
+                                <md-option value="" ng-selected="true">{/'Empty' | translate/}</md-option>
+                                <md-option id="service{/$index/}-RegistryAuth-value"
+                                           data-ng-repeat="regAuth in stackCreateByFormCtrl.regAuths"
+                                           ng-value="regAuth.Name">{/regAuth.Name/}
+                                </md-option>
+                            </md-select>
+                        </div>
+                        <p class="text-danger help-text"></p>
+                    </div>
+
+                    <div class="form-group" layout="column">
+                        <div class="sub-button">
+                            <md-button id="service{/$index/}-AddPorts" class="md-raised md-success md-small"
+                                       data-ng-click="stackCreateByFormCtrl.addConfig(serve.EndpointSpec.Ports, 'Ports')">
+                                <i class='fa fa-plus'></i> {/'Add Port Mapping' | translate/}
+                            </md-button>
+                            <label> <em>--publish</em> </label>
+                        </div>
+                        <div data-ng-repeat="port in serve.EndpointSpec.Ports track by $index">
+                            <ng-form id="portForm{/$index/}" name="portForm">
+                                <div class="form-control sub-group" layout="row" layout-align="start center">
+                                    <input id="container-port-{/$index/}" flex="20" type="number" placeholder="容器端口"
+                                           data-ng-model="port.TargetPort" data-required="required"
+                                           name="TargetPort" max="65535" min="1">
+                                    <md-select id="container-select-port-{/$index/}" ng-model="port.Protocol"
+                                               data-required="required" flex="20"
+                                               aria-label="select protocol">
+                                        <md-option id="select-port-value-tcp-{/$index/}" value="tcp">TCP</md-option>
+                                        <md-option id="select-port-value-udp-{/$index/}" value="udp">UDP</md-option>
+                                    </md-select>
+                                    <input id="host-port-{/$index/}" flex="20" type="number" placeholder="主机端口"
+                                           data-ng-model="port.PublishedPort" data-required="required"
+                                           name="PublishedPort" max="65535" min="1">
+                                    <md-button id="delete-endpointSpec-{/$index/}" class="md-icon-button md-primary"
+                                               aria-label="trash"
+                                               data-ng-click="stackCreateByFormCtrl.deleteConfig($index, serve.EndpointSpec.Ports)">
+                                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                    </md-button>
+                                </div>
+                            </ng-form>
+                            <div ng-messages="portForm.TargetPort.$error"
+                                 ng-if="portForm.TargetPort.$dirty"
+                                 role="alert">
+                                <p class="text-danger help-text"
+                                   ng-message="max">
+                                    <small>{/'Maximum service port can not exceed 65535' | translate/}</small>
+                                </p>
+                                <p class="text-danger help-text"
+                                   ng-message="min">
+                                    <small>{/'Service port at least 1' | translate/}</small>
+                                </p>
+                            </div>
+
+                            <div ng-messages="portForm.PublishedPort.$error"
+                                 ng-if="portForm.PublishedPort.$dirty"
+                                 role="alert">
+                                <p class="text-danger help-text"
+                                   ng-message="max">
+                                    <small>{/'Port can not exceed 65535' | translate/}</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" layout="column">
+                        <div class="sub-button">
+                            <md-button id="service{/$index/}-AddEnv" class="md-raised md-success md-small"
+                                       data-ng-click="stackCreateByFormCtrl.addConfig(serve.TaskTemplate.ContainerSpec.Env, 'Env')">
+                                <i class='fa fa-plus'></i> {/'Added Environment Variables' | translate/}
+                            </md-button>
+                            <label> <em>--env</em> </label>
+                        </div>
+                        <div data-ng-repeat="env in serve.TaskTemplate.ContainerSpec.Env track by $index">
+                            <ng-form id="envForm{/$index/}" name="envForm">
+                                <div class="form-control sub-group" layout="row" layout-align="start center">
+                                    <input id="stack-env-key-{/$index/}" flex="20" type="text" placeholder="KEY"
+                                           data-ng-model="env.key" data-required="required"
+                                           name="envKey" data-ng-pattern="/^[a-zA-Z0-9_]+$/"
+                                           dm-check-include="stackCreateByFormCtrl.listConfigByKey(serve.TaskTemplate.ContainerSpec.Env, $index)">
+
+                                    <input id="stack-env-value-{/$index/}" flex="20" type="text" placeholder="VALUE"
+                                           data-ng-model="env.value" data-required="required"
+                                           name="envValue" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/">
+
+                                    <md-button id="delete-env-{/$index/}" class="md-icon-button md-primary"
+                                               aria-label="trash"
+                                               data-ng-click="stackCreateByFormCtrl.deleteConfig($index, serve.TaskTemplate.ContainerSpec.Env)">
+                                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                    </md-button>
+                                </div>
+                            </ng-form>
+                            <div ng-messages="envForm.envKey.$error" ng-if="envForm.envKey.$dirty"
+                                 role="alert">
+                                <p class="text-danger help-text"
+                                   ng-message="pattern">
+                                    <small>{/'Only numbers, letters or underscore permitted' | translate/}</small>
+                                </p>
+                                <p class="text-danger help-text"
+                                   ng-message="dmCheckInclude">
+                                    <small>{/'Duplicated KEY is not permitted' | translate/}</small>
+                                </p>
+                            </div>
+
+                            <div ng-messages="envForm.envValue.$error" ng-if="envForm.envValue.$dirty"
+                                 role="alert">
+                                <p class="text-danger help-text"
+                                   ng-message="pattern">
+                                    <small>{/'Chinese VALUE is not permitted' | translate/}</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fold-line">
+                        <a id="show-start-up-parameter" href="#"
+                           data-ng-click="serve.showStartupParameter = !serve.showStartupParameter">
+                            <i class="fa"
+                               ng-class="{'fa-chevron-down': serve.showStartupParameter, 'fa-chevron-right': !serve.showStartupParameter}"></i>{/'CMD'
+                            | translate/}
+                        </a>
+                    </div>
+
+                    <div data-ng-show="serve.showStartupParameter">
+                        <div class="form-group" layout="column">
+                            <label>{/'Work directory' | translate/} --workdir</label>
+                            <div class="form-control">
+                                <input id="service{/$index/}-Dir" type="text"
+                                       data-ng-model="serve.TaskTemplate.ContainerSpec.Dir" name="workdir">
+                            </div>
+                            <div ng-messages="staticForm.workdir.$error"
+                                 ng-if="staticForm.workdir.$dirty"
+                                 role="alert">
+                            </div>
+                        </div>
+                        <div class="form-group" layout="column">
+                            <label>{/'Command' | translate/} command</small>
+                            </label>
+                            <div class="sub-button">
+                                <md-button id="service{/$index/}-AddCmd" class="md-raised md-success md-small"
+                                           data-ng-click="stackCreateByFormCtrl.addConfig(serve.TaskTemplate.ContainerSpec.Command, 'Cmd')">
+                                    <i class='fa fa-plus'></i> Command
+                                </md-button>
+                            </div>
+                            <div data-ng-repeat="cmd in serve.TaskTemplate.ContainerSpec.Command track by $index">
+                                <ng-form id="cmdForm{/$index/}" name="cmdForm">
+                                    <div class="form-control sub-group" layout="row" layout-align="start center">
+                                        <input id="stack-cmd-input-{/$index/}" type="text" placeholder="CMD" flex="40"
+                                               data-ng-model="cmd.command" data-required="required"
+                                               name="cmdInput">
+
+                                        <md-button id="delete-cmd-{/$index/}" class="md-icon-button md-primary"
+                                                   aria-label="trash"
+                                                   data-ng-click="stackCreateByFormCtrl.deleteConfig($index, serve.TaskTemplate.ContainerSpec.Command)">
+                                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                        </md-button>
+                                    </div>
+                                </ng-form>
+                                <div ng-messages="cmdForm.cmdInput.$error"
+                                     ng-if="cmdForm.cmdInput.$dirty"
+                                     role="alert">
+                                    <p class="text-danger help-text"
+                                       ng-message="pattern">
+                                        <small>CMD 不能包含中文</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" layout="column">
+                            <label>参数 args</small>
+                            </label>
+                            <div class="sub-button">
+                                <md-button id="service{/$index/}-AddArgs" class="md-raised md-success md-small"
+                                           data-ng-click="stackCreateByFormCtrl.addConfig(serve.TaskTemplate.ContainerSpec.Args, 'Args')">
+                                    <i class='fa fa-plus'></i> Args
+                                </md-button>
+                            </div>
+                            <div data-ng-repeat="arg in serve.TaskTemplate.ContainerSpec.Args track by $index">
+                                <ng-form id="argForm{/$index/}" name="argForm">
+                                    <div class="form-control sub-group" layout="row" layout-align="start center">
+                                        <input id="arg-input-{/$index/}" type="text" flex="40"
+                                               data-ng-model="arg.arg" data-required="required"
+                                               name="argInput">
+
+                                        <md-button id="delete-arg-{/$index/}" class="md-icon-button md-primary"
+                                                   aria-label="trash"
+                                                   data-ng-click="stackCreateByFormCtrl.deleteConfig($index, serve.TaskTemplate.ContainerSpec.Args)">
+                                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                        </md-button>
+                                    </div>
+                                </ng-form>
+                                <div ng-messages="argForm.argInput.$error"
+                                     ng-if="argForm.argInput.$dirty"
+                                     role="alert">
+                                    <p class="text-danger help-text"
+                                       ng-message="pattern">
+                                        <small>{/'Chinese Args is not permitted' | translate/}</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fold-line">
+                        <a id="stack-show-tag" href="#" data-ng-click="serve.showTag = !serve.showTag">
+                            <i class="fa"
+                               ng-class="{'fa-chevron-down': serve.showTag, 'fa-chevron-right': !serve.showTag}"></i>{/'Labels'
+                            | translate/}
+                        </a>
+                    </div>
+                    <div data-ng-show="serve.showTag">
+                        <div class="form-group" layout="column">
+                            <div class="sub-button">
+                                <md-button id="service{/$index/}-AddServeLabels" class="md-raised md-success md-small"
+                                           data-ng-click="stackCreateByFormCtrl.addConfig(serve.Labels, 'ServeLabels')">
+                                    <i class='fa fa-plus'></i> {/'Add Service Labels' | translate/}
+                                </md-button>
+                                <label><em>--label</em></label>
+                            </div>
+                            <div data-ng-repeat="label in serve.Labels track by $index">
+                                <ng-form id="serveLabels{/$index/}" name="labelForm">
+                                    <div class="form-control sub-group" layout="row" layout-align="start center">
+                                        <input id="serve-label-key-{/$index/}" flex="20" type="text" placeholder="KEY"
+                                               data-ng-model="label.key" data-required="required"
+                                               name="labelKey" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/"
+                                               dm-check-include="stackCreateByFormCtrl.listConfigByKey(serve.Labels, $index)">
+
+                                        <input id="serve-label-value-{/$index/}" flex="20" type="text"
+                                               placeholder="VALUE"
+                                               data-ng-model="label.value" data-required="required"
+                                               name="labelValue" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/">
+
+                                        <md-button id="serve-label-delete-{/$index/}" class="md-icon-button md-primary"
+                                                   aria-label="trash"
+                                                   data-ng-click="stackCreateByFormCtrl.deleteConfig($index, serve.Labels)">
+                                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                        </md-button>
+                                    </div>
+                                </ng-form>
+                                <div ng-messages="labelForm.labelKey.$error"
+                                     ng-if="labelForm.labelKey.$dirty"
+                                     role="alert">
+                                    <p class="text-danger help-text"
+                                       ng-message="pattern">
+                                        <small>{/'Chinese KEY is not permitted' | translate/}</small>
+                                    </p>
+                                    <p class="text-danger help-text"
+                                       ng-message="dmCheckInclude">
+                                        <small>{/'Duplicated KEY is not permitted' | translate/}</small>
+                                    </p>
+                                </div>
+
+                                <div ng-messages="labelForm.labelValue.$error"
+                                     ng-if="labelForm.labelValue.$dirty"
+                                     role="alert">
+                                    <p class="text-danger help-text"
+                                       ng-message="pattern">
+                                        <small>{/'Chinese VALUE is not permitted' | translate/}</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" layout="column">
+                            <div class="sub-button">
+                                <md-button id="service{/$index/}-AddLabels" class="md-raised md-success md-small"
+                                           data-ng-click="stackCreateByFormCtrl.addConfig(serve.TaskTemplate.ContainerSpec.Labels, 'Labels')">
+                                    <i class='fa fa-plus'></i> {/'Add Container Labels' | translate/}
+                                </md-button>
+                                <label><em>--container-label</em></label>
+                            </div>
+                            <div data-ng-repeat="label in serve.TaskTemplate.ContainerSpec.Labels track by $index">
+                                <ng-form id="labelForm{/$index/}" name="labelForm">
+                                    <div class="form-control sub-group" layout="row" layout-align="start center">
+                                        <input id="container-label-key-{/$index/}" flex="20" type="text"
+                                               placeholder="KEY"
+                                               data-ng-model="label.key" data-required="required"
+                                               name="labelKey" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/"
+                                               dm-check-include="stackCreateByFormCtrl.listConfigByKey(serve.TaskTemplate.ContainerSpec.Labels, $index)">
+
+                                        <input id="container-label-value-{/$index/}" flex="20" type="text"
+                                               placeholder="VALUE"
+                                               data-ng-model="label.value" data-required="required"
+                                               name="labelValue" data-ng-pattern="/^[^\u4e00-\u9fa5]*$/">
+
+                                        <md-button id="delete-container-label-{/$index/}"
+                                                   class="md-icon-button md-primary" aria-label="trash"
+                                                   data-ng-click="stackCreateByFormCtrl.deleteConfig($index, serve.TaskTemplate.ContainerSpec.Labels)">
+                                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                        </md-button>
+                                    </div>
+                                </ng-form>
+                                <div ng-messages="labelForm.labelKey.$error"
+                                     ng-if="labelForm.labelKey.$dirty"
+                                     role="alert">
+                                    <p class="text-danger help-text"
+                                       ng-message="pattern">
+                                        <small>{/'Chinese KEY is not permitted' | translate/}</small>
+                                    </p>
+                                    <p class="text-danger help-text"
+                                       ng-message="dmCheckInclude">
+                                        <small>{/'Duplicated KEY is not permitted' | translate/}</small>
+                                    </p>
+                                </div>
+
+                                <div ng-messages="labelForm.labelValue.$error"
+                                     ng-if="labelForm.labelValue.$dirty"
+                                     role="alert">
+                                    <p class="text-danger help-text"
+                                       ng-message="pattern">
+                                        <small>{/'Chinese VALUE is not permitted' | translate/}</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fold-line">
+                        <a id="show-resource-limit" href="#"
+                           data-ng-click="serve.showResourceLimit = !serve.showResourceLimit">
+                            <i class="fa"
+                               ng-class="{'fa-chevron-down': serve.showResourceLimit, 'fa-chevron-right': !serve.showResourceLimit}"></i>{/'Resource
+                            limit' | translate/}
+                        </a>
+                    </div>
+                    <div data-ng-show="serve.showResourceLimit">
+                        <div class="form-group" layout="column">
+                            <label>{/'Resource limits for each task' | translate/}</label>
+                            <div class="form-control sub-group" layout="row" layout-align="start center">
+                                <div flex="25">
+                                    <label class="sub-label">CPU
+                                        <small>{/'Core' | translate/}</small>
+                                    </label>
+                                    <input id="service{/$index/}-LimitsCPUs" type="number" name="limitCpu" min="0.01"
+                                           data-ng-model="serve.TaskTemplate.Resources.Limits.NanoCPUs">
+                                    <label><em>--limit-cpu</em></label>
+                                </div>
+                                <div flex="25">
+                                    <label class="sub-label">{/'Memory' | translate/}
+                                        <small>MB</small>
+                                    </label>
+                                    <input id="service{/$index/}-LimitsMemory" type="number" name="limitMem" min="4"
+                                           data-ng-model="serve.TaskTemplate.Resources.Limits.MemoryBytes">
+                                    <label><em>--limit-memory</em></label>
+                                </div>
+                            </div>
+                            <div ng-messages="staticForm.limitCpu.$error" ng-if="staticForm.limitCpu.$dirty"
+                                 role="alert">
+                                <p class="text-danger help-text"
+                                   ng-message="min">
+                                    <small>{/'CPU at least 0.01' | translate/}</small>
+                                </p>
+                            </div>
+                            <div ng-messages="staticForm.limitMem.$error" ng-if="staticForm.limitMem.$dirty"
+                                 role="alert">
+                                <p class="text-danger help-text"
+                                   ng-message="min">
+                                    <small>{/'Memory at least 4MB' | translate/}</small>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-group" layout="column">
+                            <label>{/'Reserved resources for each task' | translate/}</label>
+                            <div class="form-control sub-group" layout="row" layout-align="start center">
+                                <div flex="25">
+                                    <label class="sub-label">CPU
+                                        <small>{/'Core' | translate/}</small>
+                                    </label>
+                                    <input id="service{/$index/}-ReservationsCPU" type="number" name="ReservationsCpu"
+                                           min="0.01"
+                                           data-ng-model="serve.TaskTemplate.Resources.Reservations.NanoCPUs">
+                                    <label><em>--reserve-cpu</em></label>
+                                </div>
+                                <div flex="25">
+                                    <label class="sub-label">{/'Memory' | translate/}
+                                        <small>MB</small>
+                                    </label>
+                                    <input id="service{/$index/}-ReservationsMemory" type="number"
+                                           name="ReservationsMem" min=4
+                                           data-ng-model="serve.TaskTemplate.Resources.Reservations.MemoryBytes">
+                                    <label><em>--reserve-mem</em></label>
+                                </div>
+                            </div>
+                            <div ng-messages="staticForm.ReservationsCpu.$error"
+                                 ng-if="staticForm.ReservationsCpu.$dirty"
+                                 role="alert">
+                                <p class="text-danger help-text"
+                                   ng-message="min">
+                                    <small>{/'CPU at least 0.01' | translate/}</small>
+                                </p>
+                            </div>
+                            <div ng-messages="staticForm.ReservationsMem.$error"
+                                 ng-if="staticForm.ReservationsMem.$dirty"
+                                 role="alert">
+                                <p class="text-danger help-text"
+                                   ng-message="min">
+                                    <small>{/'Memory at least 4MB' | translate/}</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fold-line">
+                        <a id="show-fault-tolerant" href="#" data-ng-click="serve.showFaultTolerant = !serve.showFaultTolerant">
+                            <i class="fa"
+                               ng-class="{'fa-chevron-down': serve.showFaultTolerant, 'fa-chevron-right': !serve.showFaultTolerant}"></i>{/'Restart
+                            Policy' | translate/}
+                        </a>
+                    </div>
+
+                    <div data-ng-show="serve.showFaultTolerant">
+                        <div class="form-group" layout="column">
+                            <label>{/'Restart Policy' | translate/} <em>--restart-condition</em></label>
+                            <div class="form-control" layout="row" layout-align="start center">
+                                <md-radio-group id="service{/$index/}-Condition"
+                                                data-ng-model="serve.TaskTemplate.RestartPolicy.Condition" layout="row"
+                                                aria-label="restart-condition" flex>
+                                    <div flex="25">
+                                        <md-radio-button id="service{/$index/}-Condition-any" value="any"
+                                                         class="md-primary">
+                                            <i class="fa fa-umbrella"></i>
+                                            <md-tooltip md-direction="top">无论任务正常或异常退出，都重启, 适合批处理或定时任务场景</md-tooltip>
+                                            {/'Restart condition: Any' | translate/}
+                                        </md-radio-button>
+                                        <label><em>any</em></label>
+                                    </div>
+                                    <div flex="25">
+                                        <md-radio-button id="service{/$index/}-Condition-none" value="none"
+                                                         class="md-primary">{/'none' | translate/}
+                                        </md-radio-button>
+                                        <label><em>none</em></label>
+                                    </div>
+                                    <div flex="25">
+                                        <md-radio-button id="service{/$index/}-Condition-on-failure" value="on-failure"
+                                                         class="md-primary">
+                                            <i class="fa fa-umbrella"></i>
+                                            <md-tooltip md-direction="top">在退出状态码(exit code)非 0 的情况下重启</md-tooltip>
+                                            {/'on-failure' | translate/}
+                                        </md-radio-button>
+                                        <label><em>on-failure</em></label>
+                                    </div>
+                                </md-radio-group>
+                            </div>
+                            <div class="form-control sub-group">
+                                <div flex="55">
+                                    <label class="sub-label">{/'Window' | translate/}
+                                        <small>{/'Second' | translate/}</small>
+                                    </label>
+                                    <input id="service{/$index/}-Window" type="number" min="0"
+                                           data-ng-model="serve.TaskTemplate.RestartPolicy.Window"
+                                           name="restartPolicy">
+                                    <label><em>--restart-window</em></label>
+                                </div>
+                            </div>
+                            <div class="form-control sub-group">
+                                <div flex="55">
+                                    <label class="sub-label">{/'Delay' | translate/}
+                                        <small>{/'Second' | translate/}</small>
+                                    </label>
+                                    <input id="service{/$index/}-Delay" type="number"
+                                           data-ng-model="serve.TaskTemplate.RestartPolicy.Delay"
+                                           name="restartDelay" min="0">
+                                    <label><em>--restart-delay</em></label>
+                                </div>
+                            </div>
+                            <div class="form-control sub-group">
+                                <div flex="65">
+                                    <label class="sub-label">{/'MaxAttempts' | translate/}
+                                        <small>&nbsp;&nbsp;&nbsp;&nbsp;</small>
+                                    </label>
+                                    <input id="service{/$index/}-MaxAttempts" type="number" min="0"
+                                           data-ng-model="serve.TaskTemplate.RestartPolicy.MaxAttempts"
+                                           name="restartMaxAttempts">
+                                    <label><em>--restart-max-attempts</em></label>
+                                </div>
+                            </div>
+                            <p class="text-danger help-text"></p>
+                        </div>
+                    </div>
+
+                    <div class="fold-line">
+                        <a id="show-update-policy" href="#" data-ng-click="serve.showUpdatePolicy = !serve.showUpdatePolicy">
+                            <i class="fa"
+                               ng-class="{'fa-chevron-down': serve.showUpdatePolicy, 'fa-chevron-right': !serve.showUpdatePolicy}"></i>{/'Update
+                            Policy' | translate/}
+                        </a>
+                    </div>
+                    <div data-ng-show="serve.showUpdatePolicy">
+                        <div class="form-group" layout="column">
+                            <label>{/'Update Failure Action' | translate/} <em>--update-failure-action</em></label>
+                            <div class="form-control" layout="row" layout-align="start center">
+                                <md-radio-group id="service{/$index/}-FailureAction"
+                                                data-ng-model="serve.UpdateConfig.FailureAction" layout="row"
+                                                aria-label="restart-condition" flex>
+                                    <div flex="33">
+                                        <md-radio-button id="service{/$index/}-FailureAction-continue" value="continue"
+                                                         class="md-primary">{/'continue' | translate/}
+                                        </md-radio-button>
+                                        <label> <em>continue</em></label>
+                                    </div>
+                                    <div flex="33">
+                                        <md-radio-button id="service{/$index/}-FailureAction-pause" value="pause"
+                                                         class="md-primary">{/'Pause Update' | translate/}
+                                        </md-radio-button>
+                                        <label> <em>pause</em></label>
+                                    </div>
+                                </md-radio-group>
+                            </div>
+                            <div class="form-control sub-group" layout="row" layout-align="start center">
+                                <div flex="33">
+                                    <label class="sub-label">{/'Interval' | translate/}
+                                        <small>{/'Second' | translate/}</small>
+                                    </label>
+                                    <input id="service{/$index/}-updateDelay" type="number" min="0"
+                                           data-ng-model="serve.UpdateConfig.Delay" name="updateDelay">
+                                    <label> <em>--update-delay</em></label>
+                                </div>
+                                <div flex="33">
+                                    <label class="sub-label">{/'Update Parallelism' | translate/}</label>
+                                    <input id="service{/$index/}-Parallelism" type="number" min="0"
+                                           data-ng-model="serve.UpdateConfig.Parallelism"
+                                           name="updateParallelism">
+                                    <label> <em>--update-parallelism</em></label>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="fold-line">
+                        <a id="show-scheduling-strategy" href="#"
+                           data-ng-click="serve.showSchedulingStrategy = !serve.showSchedulingStrategy">
+                            <i class="fa"
+                               ng-class="{'fa-chevron-down': serve.showSchedulingStrategy, 'fa-chevron-right': !serve.showSchedulingStrategy}"></i>{/'Scheduling
+                            Policy' | translate/}
+                        </a>
+                    </div>
+                    <div data-ng-show="serve.showSchedulingStrategy">
+                        <div class="form-group" layout="column">
+                            <div class="sub-button">
+                                <md-button id="service{/$index/}-AddConstraints" class="md-raised md-success md-small"
+                                           data-ng-click="stackCreateByFormCtrl.addConfig(serve.TaskTemplate.Placement.Constraints, 'Constraints')">
+                                    <i class='fa fa-plus'></i> {/'Add constraints' | translate/}
+                                </md-button>
+                            </div>
+                            <div data-ng-repeat="constraint in serve.TaskTemplate.Placement.Constraints track by $index">
+                                <ng-form id="constraintForm{/$index/}" name="constraintForm">
+                                    <div class="form-control sub-group" layout="row" layout-align="start center">
+                                        <input id="constraintForm{/$index/}-ssd" flex="20" type="text"
+                                               placeholder="node.labels.ssd"
+                                               data-ng-model="constraint.key" data-required="required"
+                                               name="constraintKey" data-ng-pattern="/^[a-zA-Z0-9_]+$/"
+                                               dm-check-include="stackCreateByFormCtrl.listConfigByKey(serve.TaskTemplate.Placement.Constraints, $index)">
+
+                                        <input id="constraintForm{/$index/}-yes" flex="20" type="text" placeholder="yes"
+                                               data-ng-model="constraint.value" data-required="required"
+                                               name="constraintValue">
+
+                                        <md-button id="constraintForm{/$index/}-delete"
+                                                   class="md-icon-button md-primary" aria-label="trash"
+                                                   data-ng-click="stackCreateByFormCtrl.deleteConfig($index, serve.TaskTemplate.Placement.Constraints)">
+                                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                        </md-button>
+                                    </div>
+                                </ng-form>
+                                <div ng-messages="constraintForm.constraintKey.$error"
+                                     ng-if="constraintForm.constraintKey.$dirty"
+                                     role="alert">
+                                    <p class="text-danger help-text"
+                                       ng-message="pattern">
+                                        <small>KEY 只能为数字、字母或下划线</small>
+                                    </p>
+                                    <p class="text-danger help-text"
+                                       ng-message="dmCheckInclude">
+                                        <small>KEY 不能重复</small>
+                                    </p>
+                                </div>
+                                <div ng-messages="constraintForm.constraintValue.$error"
+                                     ng-if="constraintForm.constraintValue.$dirty"
+                                     role="alert">
+                                    <p class="text-danger help-text"
+                                       ng-message="pattern">
+                                        <small>VALUE 不能包含中文</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fold-line">
+                        <a id="show-file-mount" href="#" data-ng-click="serve.showFileMount = !serve.showFileMount">
+                            <i class="fa"
+                               ng-class="{'fa-chevron-down': serve.showFileMount, 'fa-chevron-right': !serve.showFileMount}"></i>{/'File
+                            mount' | translate/}
+                        </a>
+                    </div>
+
+                    <div data-ng-show="serve.showFileMount">
+                        <div class="form-group" layout="column">
+                            <div class="sub-button">
+                                <md-button id="service{/$index/}-AddMounts" class="md-raised md-success md-small"
+                                           data-ng-click="stackCreateByFormCtrl.addConfig(serve.TaskTemplate.ContainerSpec.Mounts, 'Mounts')">
+                                    <i class='fa fa-plus'></i> {/'Mount' | translate/}
+                                </md-button>
+                            </div>
+                            <div data-ng-repeat="mount in serve.TaskTemplate.ContainerSpec.Mounts track by $index">
+                                <ng-form id="mountForm{/$index/}" name="mountForm">
+                                    <div class="form-control sub-group" layout="row" layout-align="start center">
+                                        <input id="mountForm{/$index/}-source" flex="20" type="text"
+                                               placeholder="Source"
+                                               data-ng-model="mount.Source" data-required="required"
+                                               name="Source" max="65535" min="1">
+
+                                        <md-select id="mountForm{/$index/}-select" ng-model="mount.ReadOnly"
+                                                   data-required="required" flex="20"
+                                                   aria-label="select mount">
+                                            <md-option id="mountForm{/$index/}-yes" ng-value="true">{/'Read-only' |
+                                                translate/}
+                                            </md-option>
+                                            <md-option id="mountForm{/$index/}-no" ng-value="false">{/'Read-Write' |
+                                                translate/}
+                                            </md-option>
+                                        </md-select>
+
+                                        <input id="mountForm{/$index/}-target" flex="20" type="text"
+                                               placeholder="Target"
+                                               data-ng-model="mount.Target" data-required="required"
+                                               name="Target" max="65535" min="1">
+
+                                        <md-button id="mountForm{/$index/}-delete" class="md-icon-button md-primary"
+                                                   aria-label="trash"
+                                                   data-ng-click="stackCreateByFormCtrl.deleteConfig($index, serve.TaskTemplate.ContainerSpec.Mounts)">
+                                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                        </md-button>
+                                    </div>
+                                </ng-form>
+                                <div ng-messages="mountForm.Source.$error"
+                                     ng-if="mountForm.Source.$dirty"
+                                     role="alert">
+                                </div>
+
+                                <div ng-messages="mountForm.Target.$error"
+                                     ng-if="mountForm.Target.$dirty"
+                                     role="alert">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <footer class="form-buttons">
+                        <md-button id="pre{/$index/}"
+                                   data-ng-click="stackCreateByFormCtrl.step = 1">{/'Previous' | translate/}
+                        </md-button>
+
+                        <md-button id="addServe{/$index/}" class="md-raised" data-ng-disabled="staticForm.$invalid"
+                                   data-ng-click="stackCreateByFormCtrl.addServe()">{/'Continue to add' | translate/}
+                        </md-button>
+                        <md-button id="removeServe{/$index/}" class="md-raised"
+                                   data-ng-if="!$first"
+                                   data-ng-click="stackCreateByFormCtrl.removeServe($index)">{/'Delete Service' |
+                            translate/}
+                        </md-button>
+                        <md-button id="create{/$index/}" class="md-raised md-primary"
+                                   data-ng-disabled="staticForm.$invalid"
+                                   data-ng-click="stackCreateByFormCtrl.create()">
+                            {/'Deploy' | translate/}
+                        </md-button>
+                        <md-button id="createAndDownload{/$index/}" class="md-raised md-primary"
+                                   data-ng-disabled="staticForm.$invalid"
+                                   data-ng-click="stackCreateByFormCtrl.createAndDownload()">{/'Deployment and export' |
+                            translate/}
+                        </md-button>
+                    </footer>
+                </form>
+            </md-content>
+        </md-tab>
+    </md-tabs>
+</div>
